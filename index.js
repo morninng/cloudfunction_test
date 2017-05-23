@@ -265,6 +265,83 @@ function add_message_notification_user(reciver_id, message_data){
 
 
 
+app.get('/eventchat_read', (req, res)=> {
+    const event_id = "-Kid148AQD3DC5ftdsuX";
+    user_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    console.log("eventchat_read", event_id)
+    console.log("eventchat_read", user_id)
+
+    eventchat_read(event_id, user_id);
+
+    res.send('add_message2');
+});
+
+function eventchat_read(event_id, user_id){
+    console.log("eventchat_read", event_id);
+    console.log("eventchat_read", user_id);
+
+
+    const usermessage_ref = "/users/message/" + user_id;
+    firebase_admin.database().ref(usermessage_ref).once("value")
+    .then( (snapshot)=>{
+
+        console.log("aaa");
+        const message_arr = [];
+        snapshot.forEach((child_snapshot)=>{
+            if(child_snapshot.val().event_id === event_id){
+                message_arr.push(Object.assign({},child_snapshot.val(), {key:child_snapshot.key}))
+            }else{
+                return false;
+            }
+        })
+
+        console.log(message_arr, user_id);
+        read_messages(message_arr, user_id);
+    });
+}
+
+
+function read_messages(message_arr, user_id){
+
+    if(message_arr.length === 0){
+        return;
+    }
+    if(message_arr.length === 1){
+        read_message(message_arr[0].key, user_id);
+        return;
+    }
+
+    if(message_arr.length > 1){
+
+        read_message(message_arr[0].key, user_id);
+        for(var i=1; i< message_arr.length; i++){
+            delete_message(message_arr[i].key, user_id);
+        }
+    }
+}
+
+function read_message(message_key, user_id){
+
+    const usermessage_ref = "/users/message/" + user_id + "/" + message_key + "/read";
+    firebase_admin.database().ref(usermessage_ref).set(true)
+    .then( ()=>{
+        console.log("succeed to set as read");
+    }).catch(()=>{
+        console.log("failed");
+    })
+}
+
+function delete_message(message_key, user_id){
+
+    const usermessage_ref = "/users/message/" + user_id + "/" + message_key;
+    firebase_admin.database().ref(usermessage_ref).remove()
+    .then( ()=>{
+        console.log("succeed to set delete");
+    }).catch(()=>{
+        console.log("failed to delete");
+    })
+
+}
 
 
 
