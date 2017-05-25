@@ -51,50 +51,7 @@ app.get('/retrieve_future_event', (req, res)=> {
 
 
 
- const NOTIFICATION_MESSAGE_TYPE_messagelist = "NOTIFICATION_MESSAGE_TYPE_messagelist";
- const NOTIFICATION_MESSAGE_TYPE_notificationlist = "NOTIFICATION_MESSAGE_TYPE_notificationlist";
- const NOTIFICATION_MESSAGE_TYPE_message = "NOTIFICATION_MESSAGE_TYPE_message";
 
-
-
- const NOTIFICATION_SRCTYPE_ARTICLE_writtendebate2 = "NOTIFICATION_SRCTYPE_ARTICLE_writtendebate2";
- const NOTIFICATION_SRCTYPE_ARTICLE_audiotranscriptserverrecog = "NOTIFICATION_SRCTYPE_ARTICLE_audiotranscriptserverrecog";
- const NOTIFICATION_SRCTYPE_EVENT = "NOTIFICATION_SRCTYPE_EVENT";
- const NOTIFICATION_NOTIFTYPE_generalcomment = "NOTIFICATION_NOTIFTYPE_generalcomment";
- const NOTIFICATION_NOTIFTYPE_sentencecomment = "NOTIFICATION_NOTIFTYPE_sentencecomment";
- const NOTIFICATION_NOTIFTYPE_like = "NOTIFICATION_NOTIFTYPE_like";
-
- const NOTIFICATION_NOTIFTYPE_addargument = "NOTIFICATION_NOTIFTYPE_addargument";
- const NOTIFICATION_NOTIFTYPE_addopinion = "NOTIFICATION_NOTIFTYPE_addopinion";
- const NOTIFICATION_NOTIFTYPE_eventinvite = "NOTIFICATION_NOTIFTYPE_eventinvite";
- const NOTIFICATION_NOTIFTYPE_eventmaybe = "NOTIFICATION_NOTIFTYPE_eventmaybe";
- const NOTIFICATION_NOTIFTYPE_eventgoing = "NOTIFICATION_NOTIFTYPE_eventgoing";
-
- const NOTIFICATION_MESSAGETYPE_event = "NOTIFICATION_MESSAGETYPE_event";
- const NOTIFICATION_MESSAGETYPE_interpersonal = "NOTIFICATION_MESSAGETYPE_interpersonal";
-
-
-app.get('/add_notification', (req, res)=> {
-
-  var notification_content = {
-      user_id:"BPDem9DVQkdP1cuoV9d9IMzQfHy1",
-      event_id: "aaa",
-      src_type: NOTIFICATION_SRCTYPE_ARTICLE_writtendebate2,
-      notif_type: NOTIFICATION_NOTIFTYPE_addargument,
-      title:"thw ban tobacco"
-  }
-  var current_time = Date.now();
-  var user_notify_ref = firebase_admin.database().ref("/users/notification/" + "KmrhWB4uRSR6FkqTpLPFFkIGZr92" + "/" + current_time);
-  user_notify_ref.update(notification_content).then(()=>{
-
-    res.send('add_notification');
-  }).catch(()=>{
-
-    res.send('add_notification');
-  });
-
-
-});
 
 
 app.get('/add_message', (req, res)=> {
@@ -340,8 +297,228 @@ function delete_message(message_key, user_id){
     }).catch(()=>{
         console.log("failed to delete");
     })
+}
+
+
+ const NOTIFICATION_MESSAGE_TYPE_messagelist = "NOTIFICATION_MESSAGE_TYPE_messagelist";
+ const NOTIFICATION_MESSAGE_TYPE_notificationlist = "NOTIFICATION_MESSAGE_TYPE_notificationlist";
+ const NOTIFICATION_MESSAGE_TYPE_message = "NOTIFICATION_MESSAGE_TYPE_message";
+
+
+
+
+// the notification comment will be
+/*
+notification titleじたいは、motionのみでいい。
+ 3 arguments, 2 comments, 9 vote, 3 sentence comments　 are added
+ という記載にする。
+データ構造は次のような具合
+ arguments: [id_1, id_2, , , ]
+ opinions: [id_a, id_b]
+ general_comments: [id_z, id_x]
+ sentence_comment: 
+ ここで、設定された、IDをqueryにparameterをつけることで記事に"New"というマークをつける。
+
+ 
+ argument: [{id:aaa, title:"bbb"}, {id:bbb, title:"ccc"}] 
+
+
+
+
+廃案↓
+{general_comment: 1,
+ sentence_comment: 2,
+ motion: "thw ban tobacco",
+ addargument: {arg_id: "1234", signpost:"justification", opinion_num: 2}のような、どのアクションがなされたのかがわかりやすくする。
+ addopinion: {arg_id: aaa, title: "", num: 3}
+ UIには、5つのargumentと2つのopinionが追加されました
+ のようにかく
+ どのsignpostにたいして、
+ここでの利用方法だが、notificationだけではなく、opinion やargument に　NEWまーくうをつける
+
+                general_comment:[],
+                sentence_comment:[],
+                argument:[],
+                opinion:[],
+                vote:[]
+ */
+// Elementが、ユーザのアクション　monitorするfirebaseのdataにより異なる。
+ // comment type for article related notification
+ const NOTIFICATION_ELEMENT_generalcomment = "general_comment";
+ const NOTIFICATION_ELEMENT_sentencecomment = "sentence_comment";
+ const NOTIFICATION_ELEMENT_like = "like";
+ const NOTIFICATION_ELEMENT_addargument = "argument";
+ const NOTIFICATION_ELEMENT_addopinion = "opinion";
+ const NOTIFICATION_ELEMENT_vote = "vote";
+
+// comment type for event related notification
+ const NOTIFICATION_ELEMENT_eventinvite = "eventinvite";
+ const NOTIFICATION_ELEMENT_eventmaybe = "eventmaybe";
+ const NOTIFICATION_ELEMENT_eventgoing = "eventgoing";
+ const NOTIFICATION_ELEMENT_eventcannotgo = "eventcannotgo";
+
+// when notification is clicked, go to event page
+// Destinationが、クリックしたときに行く先。行く先が同じものは、notificationに二ついらないので、過去分はけす。
+ const NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_clientrecog = "NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_clientrecog";
+ const NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog = "NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog";
+ const NOTIFICATION_DESTINATION_ARTICLE_writtendebate2 = "NOTIFICATION_DESTINATION_ARTICLE_writtendebate2";
+ const NOTIFICATION_DESTINATION_EVENT = "NOTIFICATION_DESTINATION_EVENT";
+//データ構造
+// 一つの destinationにたいして、複数のelementが存在する。
+// 過去に同じdestinationのあるものが設定されたばあい、それは削除するが、前のものにたいして、elementのIDを負荷していくことで、
+// クライアントがわで何を表示するかを汎用的に変更できる。
+// should not add 
+
+
+
+app.get('/generalcomment_add_araticleserverrecog', (req, res)=> {
+    console.log("generalcomment_add");
+    const event_id = "-Kid148AQD3DC5ftdsuX";
+    const sender_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    const notify_element_type = NOTIFICATION_ELEMENT_addargument
+    const notify_element_id =  "-Kkaabbbbaag";
+    const destination_type = NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog;
+
+    add_notification(event_id, sender_id, destination_type, notify_element_type, notify_element_id );
+
+    res.send('generalcomment_add');
+});
+
+
+
+function add_commentorinfo_before_notification(){
+    // event情報取得：cannot goか、user情報がなかったとき、commentorという役割を設定する。
 
 }
+
+
+function add_notification(event_id, sender_id, destination_type, notify_element_type, notify_element_id ){
+
+    console.log("add_notification");
+
+    const event_ref = "/event_related/event/" + event_id;
+    const participants_tobe_notified = [];
+
+    firebase_admin.database().ref(event_ref).once("value")
+    .then( (snapshot)=>{
+        event_data = snapshot.val() || {};
+        for(var key in event_data.participants){
+            if(event_data.participants[key] != "ParticipateCannotgo" /* || event_data.participants[key] != "ParticipateInvited" */){
+                participants_tobe_notified.push(key);
+            }
+        }
+        if(participants_tobe_notified.length === 0){
+            returen;
+        }
+        if(participants_tobe_notified.length === 1 && participants_tobe_notified[0] === sender_id){
+            returen;
+        }
+        const event_title = event_data.motion || event_data.title || "";
+       // const event_type = event_data.type;
+
+        participants_tobe_notified.forEach((receiver_id)=>{
+            add_notification_user(event_id, sender_id, receiver_id, event_title, destination_type, notify_element_type, notify_element_id )
+        })
+    });
+};
+
+
+
+
+/* notificationはもっとシンプル。
+ senderにはおくらず。receiverに」見せるのは全員、sender
+ 過去のがなかったr、しんきでつくる。
+ 　過去データがあったら、pushで追加
+
+*/
+
+
+function add_notification_user(event_id, sender_id, receiver_id, event_title, destination_type, notify_element_type, notify_element_id)
+{
+    console.log("add_notification_user", receiver_id);
+
+    const notification_ref = "users/notification/" + receiver_id;
+    firebase_admin.database().ref(notification_ref).once("value")
+    .then( (snapshot)=>{
+        const existing_notification_data_all = snapshot.val();
+        let existing_notification_id = null;
+        let existing_notification_data = {};
+        let existing_comment_data = {};
+
+        for(let key in existing_notification_data_all){
+            if(existing_notification_data_all[key] && existing_notification_data_all[key].event_id === event_id){
+                existing_notification_id = key;
+                existing_notification_data = existing_notification_data_all[key];
+            }
+        }
+
+        existing_comment_data = existing_notification_data.comment_data || {};
+
+            // each key should match NOTIFICATION_ELEMENT
+        const comment_data = {
+            general_comment: existing_comment_data.general_comment || [],
+            sentence_comment: existing_comment_data.sentence_comment || [],
+            argument: existing_comment_data.argument || [],
+            opinion:existing_comment_data.opinion || [],
+            vote:existing_comment_data.vote || [],
+            like:existing_comment_data.like || [],
+            eventinvite:existing_comment_data.eventinvite || [],
+            eventmaybe: existing_comment_data.eventmaybe || [],
+            eventgoing: existing_comment_data.eventgoing || [],
+            eventcannotgo: existing_comment_data.eventcannotgo || []
+        }
+        comment_data[notify_element_type].push(notify_element_id);
+
+        let new_notification_data = {
+            event_id: event_id,
+            sender_id: sender_id,
+            event_title: event_title,
+            read: false,
+            destination:destination_type,
+            comment_data: comment_data
+        }
+        console.log("existing_notification_id", existing_notification_id);
+        console.log("new_notification_data",new_notification_data);
+        add_notification_data_userfield(receiver_id, new_notification_data);
+
+        if(existing_notification_id){
+            remove_notification_data_userfield(receiver_id, existing_notification_id);
+        }
+
+    });
+
+}
+
+
+
+function add_notification_data_userfield(receiver_id, new_notification_data){
+
+    console.log("add_notification_data_userfield", receiver_id);
+
+  var current_time = Date.now();
+  var user_notification_ref = firebase_admin.database().ref("/users/notification/" + receiver_id + "/" + current_time);
+  user_notification_ref.update(new_notification_data).then(()=>{
+    console.log("finish adding data")
+  }).catch((err)=>{
+    console.log("error ", err);
+  });
+
+}
+
+function remove_notification_data_userfield(receiver_id, existing_notification_id){
+
+
+    console.log("remove_notification_data_userfield", receiver_id);
+
+  var user_notification_ref = firebase_admin.database().ref("/users/notification/" + receiver_id + "/" + existing_notification_id);
+  user_notification_ref.remove().then(()=>{
+    console.log("finish removing data")
+  }).catch((err)=>{
+    console.log("error ", err);
+  });
+
+}
+
 
 
 
