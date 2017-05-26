@@ -522,6 +522,64 @@ function remove_notification_data_userfield(receiver_id, existing_notification_i
 
 
 
+app.get('/event_invited', (req, res)=> {
+    console.log("generalcomment_add");
+    const event_id = "-Kid148AQD3DC5ftdsuX";
+    const user_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+
+    event_invited(event_id, user_id );
+
+    res.send('event_invited');
+});
+
+
+
+function event_invited(event_id , receiver_id){
+    console.log("event_invited");
+
+    const event_ref = "/event_related/event/" + event_id;
+    const receiver_notification_ref = "users/notification/" + receiver_id;
+    let event_creator_id = null;
+    let event_title = null;
+
+    firebase_admin.database().ref(event_ref).once("value")
+    .then( (snapshot)=>{
+        const event_data = snapshot.val() || {};
+
+        event_creator_id = event_data.created_by;
+        event_title = event_data.motion || event_data.title || "";
+
+        if(receiver_id === event_creator_id){
+            console.log("creator will not invite by yourself");
+            return;
+        }
+
+        return firebase_admin.database().ref(receiver_notification_ref).once("value")
+    }).then((snapshot)=>{
+        const receiver_notification = snapshot.val();
+
+        for(let key in receiver_notification){
+            if(receiver_notification[key].event_id === event_id && receiver_notification[key].destination === NOTIFICATION_DESTINATION_EVENT){
+                remove_notification_data_userfield(receiver_id, key)
+            }
+        }
+        let new_notification_data = {
+            event_id: event_id,
+            sender_id: event_creator_id,
+            event_title: event_title,
+            event_participate_type: NOTIFICATION_ELEMENT_eventinvite,
+            read: false,
+            destination:NOTIFICATION_DESTINATION_EVENT,
+        }
+        add_notification_data_userfield(receiver_id, new_notification_data);
+
+    });
+
+}
+
+
+
+
 
 app.get('/calendar', (req, res)=> {
 
