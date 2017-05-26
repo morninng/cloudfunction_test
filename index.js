@@ -581,6 +581,90 @@ function event_invited(event_id , receiver_id){
 
 
 
+
+app.get('/notification_read', (req, res)=> {
+    console.log("event_read");
+    const event_id = "-KjQvh1UqlD4kXefsGuz";
+    const user_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    const notification_destination = "NOTIFICATION_DESTINATION_EVENT";
+
+    notification_read(event_id, user_id, notification_destination);
+    res.send('event_invited');
+});
+
+
+function notification_read(event_id, user_id, notification_destination){
+
+    const usernotification_ref = "/users/notification/" + user_id;
+    firebase_admin.database().ref(usernotification_ref).once("value")
+    .then( (snapshots)=>{
+        const notification_arr = [];
+        snapshots.forEach((child_snapshot)=>{
+            notification_data = child_snapshot.val();
+            if(notification_data.event_id === event_id && notification_data.destination === notification_destination){
+                notification_arr.push(Object.assign({},child_snapshot.val(), {key:child_snapshot.key}))
+            }else{
+                return false;
+            }
+        })
+
+        console.log("notification_arr, ", notification_arr);
+        read_notifications(notification_arr, user_id);
+    });
+}
+
+
+function read_notifications(notification_arr, user_id){
+
+    if(notification_arr.length === 0){
+        return;
+    }
+    if(notification_arr.length === 1){
+        read_notification(notification_arr[0].key, user_id);
+        return;
+    }
+
+    if(notification_arr.length > 1){
+
+        read_notification(notification_arr[0].key, user_id);
+        for(var i=1; i< notification_arr.length; i++){
+            delete_notification(notification_arr[i].key, user_id);
+        }
+    }
+}
+
+function read_notification(notification_key, user_id){
+
+    const usernotification_ref = "/users/notification/" + user_id + "/" + notification_key + "/read";
+    console.log("usernotification_ref for read ", usernotification_ref);
+    firebase_admin.database().ref(usernotification_ref).set(true)
+    .then( ()=>{
+        console.log("succeed to set as read");
+    }).catch(()=>{
+        console.log("failed");
+    })
+}
+
+function delete_notification(notification_key, user_id){
+
+    const usermessage_ref = "/users/notification/" + user_id + "/" + notification_key;
+    console.log("usernotification_ref for delete ", usernotification_ref);
+    firebase_admin.database().ref(usermessage_ref).remove()
+    .then( ()=>{
+        console.log("succeed to delete");
+    }).catch(()=>{
+        console.log("failed to delete");
+    })
+
+}
+
+
+
+
+
+
+
+
 app.get('/calendar', (req, res)=> {
 
 
