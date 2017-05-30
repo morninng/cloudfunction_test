@@ -1,0 +1,16 @@
+{
+  "files": [
+        "./ts/notification.ts",
+        "./ts/message.ts",
+        "./ts/my-event.ts",
+        "./ts/calendar.ts",
+        "./ts/fb_graph.ts"
+  ],
+  "compilerOptions": {
+    "module":"commonjs",
+    "target": "ES6",
+    "typeRoots": [
+      "node_modules/@types"
+    ]
+  }
+}

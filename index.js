@@ -37,21 +37,228 @@ const server = httpServer.listen(serverPort,  serverHost, ()=> {
   console.log('Example app listening at http://%s:%s', host, port);
 });
 
-
 app.get('/', (req, res)=> {
   console.log('root is called'); 
-  res.send('Hello World recording server!');
+  res.send('Hello World firebase ');
 });
+
+
+/*********cloud function same code from here*************/ 
+
+
+const Calendar = require('./js/calendar.js');
+const calendar = new Calendar();
+const MyEvent = require('./js/my-event.js');
+const my_event = new MyEvent();
+const FacebookGraph = require('./js/fb_graph.js');
+const fb_graph = new FacebookGraph();
+const Message = require('./js/message.js');
+const message = new Message();
+const Notification = require('./js/notification.js');
+const notification = new Notification();
+
+
+app.get('/get_auth_url', (request, response)=> {
+  calendar.get_auth_url(request, response);
+});
+
+
+
+app.get('/store_token', (request, response)=> {
+  calendar.store_token(request, response);
+});
+
+
+app.get('/listEvents', (request, response)=> {
+  calendar.listEvents(request, response);
+});
+
+app.get('/eventchatmain_read', (request, response)=> {
+
+    const event_id = "-Kid148AQD3DC5ftdsuX";
+    user_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    console.log("eventchat_read", event_id);
+    console.log("eventchat_read", user_id);
+
+    message.eventchat_read(event_id, user_id);
+
+});
+
+
+ const NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_clientrecog = "NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_clientrecog";
+ const NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog = "NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog";
+ const NOTIFICATION_DESTINATION_ARTICLE_writtendebate2 = "NOTIFICATION_DESTINATION_ARTICLE_writtendebate2";
+ const NOTIFICATION_DESTINATION_EVENT = "NOTIFICATION_DESTINATION_EVENT";
+
+
+
+app.get('/notification_read', (request, response)=> {
+
+    const event_id = "-Kid148AQD3DC5ftdsuX";
+    const user_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    const notification_destination = NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog;
+    console.log("notification_read " + event_id + "- - " + user_id + "- -" + notification_destination);
+
+    notification.notification_read(event_id, user_id, notification_destination);
+
+});
+
+
+
+app.get('/google_profile_monitor', (request, response)=> {
+
+    const user_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    calendar.update_calendar_for_user(user_id);
+
+});
+
+
+
+app.get('/event_monitor', (request, response)=> {
+
+    const event_id = "-Kid148AQD3DC5ftdsuX";
+    calendar.update_calendar_for_eventupdate(event_id);
+
+});
+
+
+
+
+
+const TEAM_PROPOSITION = "proposition";
+const TEAM_OPPOSITION = "opposition";
+const ParticipateCannotgo = "ParticipateCannotgo";
+const ParticipateGoing = "ParticipateGoing";
+const ParticipateMaybe = "ParticipateMaybe";
+const ParticipateInvited = "ParticipateInvited";
+const ParticipateProposition = TEAM_PROPOSITION;
+const ParticipateOpposition = TEAM_OPPOSITION;
+
+
+
+
+app.get('/eventparticipate_monitor', (request, response)=> {
+
+    const event_id = "-Kid148AQD3DC5ftdsuX";
+    const user_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    const participate_value = ParticipateGoing
+    const is_event_exist = true;
+
+    my_event.add_event(event_id, user_id, participate_value, is_event_exist);
+    calendar.update_calendar_for_eventupdate(event_id);
+
+    notification.event_participate(event_id);
+});
+
+
+
+app.get('/userregist_monitor', (req, res)=> {
+
+    const user_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    const token = "EAAHjdmjMJ6cBAOlQyU8J2PvFhpqunNVZBceJAFj2NZCQ1qoaqd6XFOwPw7ZCS1N6k4wrHrls4j8ZCyOE6HBFjtELZADHBsiLVsJXCsZCLwOfT17wmGBocVY8k4MKPO9MLnZBsVlZCGt99GR72OikPWL8mlwJl7tOhhMJUZCmZAIEJuywZDZD";
+    fb_graph.retrieve_and_set_graph_profiledata(user_id, token)
+
+
+});
+
+
+app.get('/eventchatmain_monitor', (req, res)=> {
+
+    const event_id = "-Kid148AQD3DC5ftdsuX";
+    const sender_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    message.eventchat_added(event_id, sender_id);
+
+});
+
+
+
+app.get('/writtendebate2_opinion_monitor', (req, res)=> {
+
+    const event_id = "-KjGgf5DFaROgdvM9Ebh";
+    const sender_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    const opinion_id = "-KjbCrDk1ufFY8GzJblH"
+
+    notification.writtendebate2_add_opinion(event_id, opinion_id, sender_id);
+
+});
+
+
+
+
+app.get('/writtendebate2_votereason_monitor', (req, res)=> {
+
+    const event_id = "-KjGgf5DFaROgdvM9Ebh";
+    const sender_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    const vote_id = "-KkyCKTI_9ki0mVPtWbb";
+
+    notification.writtendebate2_add_vote(event_id, vote_id, sender_id);
+
+});
+
+
+app.get('/audiotranscriptserver_votereason_monitor', (req, res)=> {
+
+    const event_id = "-KjGgf5DFaROgdvM9Ebh";
+    const sender_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    const vote_id = "-KkyCKTI_9ki0mVPtWbb";
+
+    notification.audiotranscriptserver_add_vote(event_id, vote_id, sender_id);
+
+});
+
+
+
+
+app.get('/writtendebate2_general_comment_monitor', (req, res)=> {
+
+    const event_id = "-Kjry3ylbB2kKQLmPMO0";
+    const sender_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    const general_comment_id = "-KlC0lWosR2Z7MBZRPPH";
+
+    notification.writtendebate2_add_generalcomment(event_id, general_comment_id, sender_id);
+
+});
+
+
+
+app.get('/writtendebate2_sentence_comment_monitor', (req, res)=> {
+
+    const event_id = "-KjGgf5DFaROgdvM9Ebh";
+    const sender_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    const sentence_id = "47e6360b-7993-10e0-8904-7ea21ec5856d";
+
+    notification.writtendebate2_add_sentencecomment(event_id, sentence_id, sender_id);
+
+});
+
+
+app.get('/audiotranscriptserver_sentence_comment_monitor', (req, res)=> {
+
+    const event_id = "-KjGgf5DFaROgdvM9Ebh";
+    const sender_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
+    const sentence_id = "47e6360b-7993-10e0-8904-7ea21ec5856d";
+
+    notification.audiotranscriptserver_add_sentencecomment(event_id, sentence_id, sender_id);
+
+});
+
+
+
+
+
+/*
+
 
 app.get('/retrieve_future_event', (req, res)=> {
   retrieve_future_event();
   res.send('retrieve_future_event');
 });
+*/
 
 
 
 
-
+/*
 
 
 app.get('/add_message', (req, res)=> {
@@ -72,8 +279,9 @@ app.get('/add_message', (req, res)=> {
     res.send('add_message');
   });
 });
+*/
 
-
+/*
 app.get('/add_eventchat', (req, res)=> {
     const event_id = "-KkP5PnOtWRzbys3hu4g";
     sender_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
@@ -82,6 +290,10 @@ app.get('/add_eventchat', (req, res)=> {
 
     res.send('add_message2');
 });
+
+*/
+
+/*
 
 function eventchat_added(event_id, sender_id){
 
@@ -95,7 +307,7 @@ function eventchat_added(event_id, sender_id){
     .then( (snapshot)=>{
         event_data = snapshot.val() || {};
         for(var key in event_data.participants){
-            if(event_data.participants[key] != "ParticipateCannotgo" /* || event_data.participants[key] != "ParticipateInvited" */){
+            if(event_data.participants[key] != "ParticipateCannotgo" ){
                 participants_tobe_notified.push(key);
             }
         }
@@ -113,8 +325,9 @@ function eventchat_added(event_id, sender_id){
         })
     });
 }
+*/
 
-
+/*
 function add_message_notification(event_id, sender_id, reciver_id, event_title, participants_tobe_notified){
 
     const message_ref = "users/message/" + reciver_id;
@@ -192,8 +405,10 @@ function add_message_notification(event_id, sender_id, reciver_id, event_title, 
         }
     });
 }
+*/
 
 
+/*
 function delete_message_notification(reciver_id, existing_message_id){
 
   var user_message_ref = firebase_admin.database().ref("/users/message/" + reciver_id + "/" + existing_message_id);
@@ -204,9 +419,10 @@ function delete_message_notification(reciver_id, existing_message_id){
   });
 
 }
+*/
 
 
-
+/*
 function add_message_notification_user(reciver_id, message_data){
 
   var current_time = Date.now();
@@ -218,9 +434,10 @@ function add_message_notification_user(reciver_id, message_data){
   });
 
 }
+*/
 
 
-
+/*
 
 app.get('/eventchat_read', (req, res)=> {
     const event_id = "-Kid148AQD3DC5ftdsuX";
@@ -232,6 +449,9 @@ app.get('/eventchat_read', (req, res)=> {
 
     res.send('add_message2');
 });
+*/
+
+/*
 
 function eventchat_read(event_id, user_id){
     console.log("eventchat_read", event_id);
@@ -257,6 +477,9 @@ function eventchat_read(event_id, user_id){
     });
 }
 
+*/
+
+/*
 
 function read_messages(message_arr, user_id){
 
@@ -277,6 +500,10 @@ function read_messages(message_arr, user_id){
     }
 }
 
+*/
+
+/*
+
 function read_message(message_key, user_id){
 
     const usermessage_ref = "/users/message/" + user_id + "/" + message_key + "/read";
@@ -288,6 +515,9 @@ function read_message(message_key, user_id){
     })
 }
 
+*/
+
+/*
 function delete_message(message_key, user_id){
 
     const usermessage_ref = "/users/message/" + user_id + "/" + message_key;
@@ -299,6 +529,7 @@ function delete_message(message_key, user_id){
     })
 }
 
+*/
 
  const NOTIFICATION_MESSAGE_TYPE_messagelist = "NOTIFICATION_MESSAGE_TYPE_messagelist";
  const NOTIFICATION_MESSAGE_TYPE_notificationlist = "NOTIFICATION_MESSAGE_TYPE_notificationlist";
@@ -359,10 +590,10 @@ notification titleじたいは、motionのみでいい。
 
 // when notification is clicked, go to event page
 // Destinationが、クリックしたときに行く先。行く先が同じものは、notificationに二ついらないので、過去分はけす。
- const NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_clientrecog = "NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_clientrecog";
- const NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog = "NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog";
- const NOTIFICATION_DESTINATION_ARTICLE_writtendebate2 = "NOTIFICATION_DESTINATION_ARTICLE_writtendebate2";
- const NOTIFICATION_DESTINATION_EVENT = "NOTIFICATION_DESTINATION_EVENT";
+//  const NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_clientrecog = "NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_clientrecog";
+//  const NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog = "NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog";
+//  const NOTIFICATION_DESTINATION_ARTICLE_writtendebate2 = "NOTIFICATION_DESTINATION_ARTICLE_writtendebate2";
+//  const NOTIFICATION_DESTINATION_EVENT = "NOTIFICATION_DESTINATION_EVENT";
 //データ構造
 // 一つの destinationにたいして、複数のelementが存在する。
 // 過去に同じdestinationのあるものが設定されたばあい、それは削除するが、前のものにたいして、elementのIDを負荷していくことで、
@@ -371,6 +602,7 @@ notification titleじたいは、motionのみでいい。
 
 
 
+/*
 app.get('/generalcomment_add_araticleserverrecog', (req, res)=> {
     console.log("generalcomment_add");
     const event_id = "-Kid148AQD3DC5ftdsuX";
@@ -383,14 +615,16 @@ app.get('/generalcomment_add_araticleserverrecog', (req, res)=> {
 
     res.send('generalcomment_add');
 });
-
-
+*/
+/*
 
 function add_commentorinfo_before_notification(){
     // event情報取得：cannot goか、user情報がなかったとき、commentorという役割を設定する。
 
 }
+*/
 
+/*
 
 function add_notification(event_id, sender_id, destination_type, notify_element_type, notify_element_id ){
 
@@ -403,7 +637,7 @@ function add_notification(event_id, sender_id, destination_type, notify_element_
     .then( (snapshot)=>{
         event_data = snapshot.val() || {};
         for(var key in event_data.participants){
-            if(event_data.participants[key] != "ParticipateCannotgo" /* || event_data.participants[key] != "ParticipateInvited" */){
+            if(event_data.participants[key] != "ParticipateCannotgo" ){
                 participants_tobe_notified.push(key);
             }
         }
@@ -422,7 +656,7 @@ function add_notification(event_id, sender_id, destination_type, notify_element_
     });
 };
 
-
+*/
 
 
 /* notificationはもっとシンプル。
@@ -431,7 +665,7 @@ function add_notification(event_id, sender_id, destination_type, notify_element_
  　過去データがあったら、pushで追加
 
 */
-
+/*
 
 function add_notification_user(event_id, sender_id, receiver_id, event_title, destination_type, notify_element_type, notify_element_id)
 {
@@ -489,7 +723,9 @@ function add_notification_user(event_id, sender_id, receiver_id, event_title, de
 
 }
 
+*/
 
+/*
 
 function add_notification_data_userfield(receiver_id, new_notification_data){
 
@@ -505,6 +741,9 @@ function add_notification_data_userfield(receiver_id, new_notification_data){
 
 }
 
+*/
+
+/*
 function remove_notification_data_userfield(receiver_id, existing_notification_id){
 
 
@@ -519,7 +758,9 @@ function remove_notification_data_userfield(receiver_id, existing_notification_i
 
 }
 
+*/
 
+/*
 
 
 app.get('/event_invited', (req, res)=> {
@@ -533,6 +774,9 @@ app.get('/event_invited', (req, res)=> {
 });
 
 
+*/
+
+/*
 
 function event_invited(event_id , receiver_id){
     console.log("event_invited");
@@ -568,19 +812,150 @@ function event_invited(event_id , receiver_id){
             sender_id: event_creator_id,
             event_title: event_title,
             event_participate_type: NOTIFICATION_ELEMENT_eventinvite,
+            date_time_start: event_date_time_start,
             read: false,
             destination:NOTIFICATION_DESTINATION_EVENT,
         }
         add_notification_data_userfield(receiver_id, new_notification_data);
 
     });
+}
+
+*/
+
+/*
+
+app.get('/event_registered', (req, res)=> {
+    console.log("event_registered");
+    const event_id = "-Kl8BhLS9fI1-UheNI68";
+
+    event_participate(event_id );
+
+    res.send('event_invited');
+});
+
+*/
+
+
+// const TEAM_PROPOSITION = "proposition";
+// const TEAM_OPPOSITION = "opposition";
+// const ParticipateCannotgo = "ParticipateCannotgo";
+// const ParticipateGoing = "ParticipateGoing";
+// const ParticipateMaybe = "ParticipateMaybe";
+// const ParticipateInvited = "ParticipateInvited";
+// const ParticipateProposition = TEAM_PROPOSITION;
+// const ParticipateOpposition = TEAM_OPPOSITION;
+
+/*
+
+function event_participate(event_id ){
+
+    console.log("event_participate in notificatoin module");
+    const event_ref = "/event_related/event/" + event_id;
+    const participants_tobe_notified = [];
+    const participants_going = [];
+    const participants_maybe = [];
+    const participants_invited = [];
+    const participants_proposition = [];
+    const participants_opposition = [];
+
+
+    firebase_admin.database().ref(event_ref).once("value")
+    .then( (snapshot)=>{
+        const event_data = snapshot.val() || {};
+        event_creator_id = event_data.created_by;
+        for(var key in event_data.participants){
+            if(event_data.participants[key] === ParticipateGoing ){
+                participants_going.push(key);
+            }
+            if(event_data.participants[key] === ParticipateMaybe ){
+                participants_maybe.push(key);
+            }
+            if(event_data.participants[key] === ParticipateInvited ){
+                participants_invited.push(key);
+            }
+            if(event_data.participants[key] === ParticipateProposition ){
+                participants_proposition.push(key);
+            }
+            if(event_data.participants[key] === ParticipateOpposition ){
+                participants_opposition.push(key);
+            }
+        }
+        const participant_info = {
+            going:participants_going,
+            maybe:participants_maybe,
+            invited:participants_invited,
+            proposition:participants_proposition,
+            opposition:participants_opposition
+        }
+
+        const event_title = event_data.motion || event_data.title || "";
+        const event_date_time_start = event_data.date_time_start;
+        const event_notification_data = {
+            event_id: event_id,
+            sender_id: event_creator_id,
+            event_title: event_title,
+            participant_info: participant_info,
+            date_time_start: event_date_time_start,
+            read: false,
+            destination:NOTIFICATION_DESTINATION_EVENT
+        }
+        const event_notify_data_going = Object.assign({}, event_notification_data, {receiver_participate_status: ParticipateGoing} )
+        const event_notify_data_mayge = Object.assign({}, event_notification_data, {receiver_participate_status: ParticipateMaybe} )
+        const event_notify_data_invited = Object.assign({}, event_notification_data, {receiver_participate_status: ParticipateInvited} )
+        const event_notify_data_propositino = Object.assign({}, event_notification_data, {receiver_participate_status: ParticipateProposition} )
+        const event_notify_data_opposition = Object.assign({}, event_notification_data, {receiver_participate_status: ParticipateOpposition} )
+
+        participants_going.forEach((receiver_id)=>{
+            event_participate_user(event_id,  receiver_id, event_notify_data_going)
+        })
+        participants_maybe.forEach((receiver_id)=>{
+            event_participate_user(event_id,  receiver_id, event_notify_data_mayge)
+        })
+        participants_invited.forEach((receiver_id)=>{
+            event_participate_user(event_id,  receiver_id, event_notify_data_invited)
+        })
+        participants_proposition.forEach((receiver_id)=>{
+            event_participate_user(event_id,  receiver_id, event_notify_data_propositino)
+        })
+        participants_opposition.forEach((receiver_id)=>{
+            event_participate_user(event_id,  receiver_id, event_notify_data_opposition)
+        })
+    });
 
 }
 
+*/
+
+/*
+
+function event_participate_user(event_id,  receiver_id, event_notify_data ){
 
 
+    console.log("event_registered");
+
+    const event_ref = "/event_related/event/" + event_id;
+    const receiver_notification_ref = "users/notification/" + receiver_id;
 
 
+    firebase_admin.database().ref(receiver_notification_ref).once("value")
+    .then((snapshot)=>{
+        const receiver_notification = snapshot.val();
+
+        for(let key in receiver_notification){
+            if(receiver_notification[key].event_id === event_id && receiver_notification[key].destination === NOTIFICATION_DESTINATION_EVENT){
+                remove_notification_data_userfield(receiver_id, key)
+            }
+        }
+        add_notification_data_userfield(receiver_id, event_notify_data);
+
+    });
+
+}
+
+*/
+
+/*
 
 app.get('/notification_read', (req, res)=> {
     console.log("event_read");
@@ -592,6 +967,9 @@ app.get('/notification_read', (req, res)=> {
     res.send('event_invited');
 });
 
+*/
+
+/*
 
 function notification_read(event_id, user_id, notification_destination){
 
@@ -658,12 +1036,16 @@ function delete_notification(notification_key, user_id){
 
 }
 
+*/
 
 
 
 
 
 
+
+
+/*
 
 app.get('/calendar', (req, res)=> {
 
@@ -789,8 +1171,7 @@ function create_event(event_data, participant_gmail_arr){
         }
     };
 
-
 }
 
-
+*/
 

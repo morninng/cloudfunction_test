@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TEAM_PROPOSITION = "proposition";
+exports.TEAM_OPPOSITION = "opposition";
+exports.ParticipateCannotgo = "ParticipateCannotgo";
+exports.ParticipateGoing = "ParticipateGoing";
+exports.ParticipateMaybe = "ParticipateMaybe";
+exports.ParticipateInvited = "ParticipateInvited";
+exports.ParticipateProposition = exports.TEAM_PROPOSITION;
+exports.ParticipateOpposition = exports.TEAM_OPPOSITION;
