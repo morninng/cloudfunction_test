@@ -57,6 +57,9 @@ const message = new Message();
 const Notification = require('./js/notification.js');
 const notification = new Notification();
 
+const Group = require('./js/group.js');
+const group = new Group();
+
 
 app.get('/get_auth_url', (request, response)=> {
   calendar.get_auth_url(request, response);
@@ -120,6 +123,28 @@ app.get('/event_monitor', (request, response)=> {
     calendar.update_calendar_for_eventupdate(event_id);
 
 });
+
+app.get('/event_monitor_group_copy', (request, response)=> {
+
+    const event_id = "-Kid148AQD3DC5ftdsuX";
+    const group_id = "aaa"
+    const event_data = {bb:"bb"};
+    group.set_groupevent(event_id, group_id, event_data);
+
+});
+
+app.get('/group_member_monitor', (request, response)=> {
+
+    const group_id = "-KoTANyTXhDqffs3_gnl"
+    const groupmember_obj = {
+        user_aaa:{role:"administrator", join_time:"XXXX", added_by:"sss"},
+        user_bbb:{role:"administrator", join_time:"YYYY", added_by:"ttt"}
+    };
+    
+    group.set_group_member( group_id, groupmember_obj);
+
+});
+
 
 
 
