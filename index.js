@@ -61,6 +61,9 @@ const Group = require('./js/group.js');
 const group = new Group();
 
 
+const Article = require('./js/article.js');
+const article = new Article();
+
 app.get('/get_auth_url', (request, response)=> {
   calendar.get_auth_url(request, response);
 });
@@ -146,6 +149,41 @@ app.get('/group_member_monitor', (request, response)=> {
 });
 
 
+app.get('/set_audiotranscript_to_participant', (request, response)=> {
+
+    const event_id = "-Kl2lXCnBqXP1QnTe0zC"
+    article.set_audiotranscript_to_participant( event_id);
+
+});
+
+app.get('/set_writtendebate2_to_participant', (request, response)=> {
+
+    const event_id = "-Kjry3ylbB2kKQLmPMO0"
+
+    
+    article.set_writtendebate2_to_participant( event_id );
+
+});
+
+
+app.get('/audiotranscript_to_sender', (request, response)=> {
+
+    const event_id = "-Kl2lXCnBqXP1QnTe0zC"
+    const sender_id = "QWgHYtTwvyNpwEsXjqswL0ZbPFO2"
+
+    article.set_audiotranscript_to_sender( event_id, sender_id );
+
+});
+
+
+app.get('/writtendebate2_to_sender', (request, response)=> {
+
+    const event_id = "-Kjry3ylbB2kKQLmPMO0"
+    const sender_id = "QWgHYtTwvyNpwEsXjqswL0ZbPFO2"
+
+    article.set_writtendebate2_to_sender( event_id, sender_id );
+
+});
 
 
 

@@ -5,7 +5,8 @@
         "./ts/my-event.ts",
         "./ts/calendar.ts",
         "./ts/fb_graph.ts",
-        "./ts/group.ts"
+        "./ts/group.ts",
+        "./ts/article.ts"
   ],
   "compilerOptions": {
     "module":"commonjs",
