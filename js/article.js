@@ -30,7 +30,7 @@ class Article {
                 motion, article_type
             };
             for (let key in participants) {
-                if (participants[key] !== participate_1.ParticipateCannotgo || participants[key] !== participate_1.ParticipateInvited)
+                if (participants[key] !== participate_1.ParticipateCannotgo && participants[key] !== participate_1.ParticipateInvited)
                     this.add_article_to_users(key, event_id, article_obj);
             }
         });

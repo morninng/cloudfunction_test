@@ -44,7 +44,7 @@ export class Article{
                 motion,article_type
             }
             for(let key in participants){
-                if(participants[key] !== ParticipateCannotgo || participants[key] !== ParticipateInvited)
+                if(participants[key] !== ParticipateCannotgo && participants[key] !== ParticipateInvited)
                 this.add_article_to_users(key, event_id , article_obj)
             }
         });
