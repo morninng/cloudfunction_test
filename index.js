@@ -124,8 +124,10 @@ app.get('/set_chat_message', (request, response)=> {
 
     const message = "https://www.yahoo.co.jp/";
     const message_path = "dddddddddddd";
+    const current_full_path = "llllll";
+    const chat_data = {user_id:"ssss", message: "llll"}
 
-    ogp.set_chat_message(message, message_path);
+    ogp.set_chat_message(message, message_path, current_full_path, chat_data);
     response.send("message passed");
 
 });

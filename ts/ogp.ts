@@ -25,7 +25,7 @@ export class OGP{
         })
     }
 
-    set_chat_message = (message, message_path) => {
+    set_chat_message = (message, message_path, current_full_path, chat_data) => {
 
         const regexp = /(((https?):\/\/)[\-\w@:%_\+.~#?,&\/\/=]+)/g;
         const url_arr = message.match(regexp);
@@ -41,10 +41,14 @@ export class OGP{
         .then((ogp_value)=>{
             ogp_value["hashed_key"] = hashed_key;
             const ogp_obj = {ogp: ogp_value}
+            const chat_data_with_ogp = Object.assign({}, {ogp: ogp_value},  chat_data);
             console.log("ogp_value is retrieved either after registration or already exist");
-            return firebase_admin.database().ref(message_path).push(ogp_obj);
+            return firebase_admin.database().ref(message_path).push(chat_data_with_ogp);
         }).then(()=>{
-            console.log("ogp data is set on chat")
+            console.log("ogp data is set on chat");
+            return firebase_admin.database().ref(current_full_path).remove();
+        }).then(()=>{
+            console.log("deleting original data succeed");
         }).catch(()=>{
             console.log("ogp handling feiled")
         })
