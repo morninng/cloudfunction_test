@@ -37,6 +37,16 @@ const server = httpServer.listen(serverPort,  serverHost, ()=> {
   console.log('Example app listening at http://%s:%s', host, port);
 });
 
+var bodyParser = require('body-parser');
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+
+
 app.get('/', (req, res)=> {
   console.log('root is called'); 
   res.send('Hello World firebase ');
@@ -59,6 +69,10 @@ const notification = new Notification();
 
 const Group = require('./js/group.js');
 const group = new Group();
+
+
+const Ogp = require('./js/ogp.js');
+const ogp = new Ogp();
 
 
 const Article = require('./js/article.js');
@@ -87,6 +101,21 @@ app.get('/eventchatmain_read', (request, response)=> {
     console.log("eventchat_read", user_id);
 
     message.eventchat_read(event_id, user_id);
+
+});
+
+
+
+app.use(bodyParser.json());
+app.post('/ogp_writtendebate_url', (request, response)=> {
+    console.log("ogp_writtendebate_url post");
+    console.log(request.body);
+    const ogp_obj = request.body;
+    const url_arr = ogp_obj.url_arr;
+    const opinion_item_path = ogp_obj.opinion_item_path;
+
+    ogp.set_writtendebate_opinion_ogp(opinion_item_path, url_arr);
+    response.send("url sent");
 
 });
 

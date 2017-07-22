@@ -6,7 +6,8 @@
         "./ts/calendar.ts",
         "./ts/fb_graph.ts",
         "./ts/group.ts",
-        "./ts/article.ts"
+        "./ts/article.ts",
+        "./ts/ogp.ts"
   ],
   "compilerOptions": {
     "module":"commonjs",
