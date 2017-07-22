@@ -15,6 +15,29 @@ class OGP {
                 this.register_ogp_writtendebate_opinion(hashed_key, url, opinion_path);
             });
         };
+        this.set_chat_message = (message, message_path) => {
+            const regexp = /(((https?):\/\/)[\-\w@:%_\+.~#?,&\/\/=]+)/g;
+            const url_arr = message.match(regexp);
+            if (!url_arr || url_arr.length === 0) {
+                return;
+            }
+            const url = url_arr[0];
+            const hash = crypto.createHash('sha256');
+            hash.update(url);
+            const data = hash.digest("base64");
+            const hashed_key = data.replace(/\//g, "");
+            this.retrieve_ogp(url, hashed_key)
+                .then((ogp_value) => {
+                ogp_value["hashed_key"] = hashed_key;
+                const ogp_obj = { ogp: ogp_value };
+                console.log("ogp_value is retrieved either after registration or already exist");
+                return firebase_admin.database().ref(message_path).push(ogp_obj);
+            }).then(() => {
+                console.log("ogp data is set on chat");
+            }).catch(() => {
+                console.log("ogp handling feiled");
+            });
+        };
         this.register_ogp_writtendebate_opinion = (hashed_key, url, opinion_path) => {
             console.log("hashed_data", hashed_key);
             console.log("url", url);

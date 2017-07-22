@@ -120,6 +120,18 @@ app.post('/ogp_writtendebate_url', (request, response)=> {
 });
 
 
+app.get('/set_chat_message', (request, response)=> {
+
+    const message = "https://www.yahoo.co.jp/";
+    const message_path = "dddddddddddd";
+
+    ogp.set_chat_message(message, message_path);
+    response.send("message passed");
+
+});
+
+
+
  const NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_clientrecog = "NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_clientrecog";
  const NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog = "NOTIFICATION_DESTINATION_ARTICLE_audiotranscript_serverrecog";
  const NOTIFICATION_DESTINATION_ARTICLE_writtendebate2 = "NOTIFICATION_DESTINATION_ARTICLE_writtendebate2";
