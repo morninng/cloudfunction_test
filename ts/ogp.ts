@@ -30,6 +30,7 @@ export class OGP{
         const regexp = /(((https?):\/\/)[\-\w@:%_\+.~#?,&\/\/=]+)/g;
         const url_arr = message.match(regexp);
         if(!url_arr || url_arr.length === 0){
+            console.log("url does not match")
             return;
         }
         const url = url_arr[0];
