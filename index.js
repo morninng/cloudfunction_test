@@ -73,10 +73,33 @@ const group = new Group();
 
 const Ogp = require('./js/ogp.js');
 const ogp = new Ogp();
-
+const OgpGenerate = require('./js/ogp-generate.js');
+const ogp_generate = new OgpGenerate();
 
 const Article = require('./js/article.js');
 const article = new Article();
+
+
+
+app.get('/event/eventcontext/-Ko_W2olTlOq_cKf7DkS', (req, res)=>{
+    console.log("test is called", req.originalUrl);
+    const origin_url = req.originalUrl;
+    
+
+    const full_url = 'https://' + req.headers.host + req.url;
+
+
+    ogp_generate.get_ogp(full_url, req.url).then((ogp_data)=>{
+
+        console.log(ogp_data);
+    }).catch((err)=>{
+        console.log(err);
+    })
+
+})
+
+
+
 
 app.get('/get_auth_url', (request, response)=> {
   calendar.get_auth_url(request, response);
