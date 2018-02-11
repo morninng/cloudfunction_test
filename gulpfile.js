@@ -14,5 +14,5 @@ gulp.task("build", function () {
     console.log('build ts');
     gulp.src('./ts/*.ts')
         .pipe(tsProject())
-        .js.pipe(gulp.dest('./js'))
+        .js.pipe(gulp.dest('./lib'))
 });

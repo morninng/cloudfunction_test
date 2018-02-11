@@ -7,8 +7,7 @@ import * as firebase_admin from 'firebase-admin';
 
 export class Test2{
 
-    constructor(){
-    }
+    // constructor(){}
 
     async multiplePromise(): Promise<any> {
         console.log('Test2, multiplePromise')
@@ -35,5 +34,3 @@ export class Test2{
 
 
 }
-
-module.exports = Test2;

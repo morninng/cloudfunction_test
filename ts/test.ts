@@ -5,10 +5,9 @@ import * as firebase_admin from 'firebase-admin';
 // import * as Promise from 'bluebird';
 
 
-export class Test{
+export class Test1{
 
-    constructor(){
-    }
+    // constructor(){}
 
     async multiplePromise(): Promise<any> {
         console.log('Test1, multiplePromise')
@@ -35,5 +34,3 @@ export class Test{
 
 
 }
-
-module.exports = Test;
