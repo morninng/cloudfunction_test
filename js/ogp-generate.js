@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const firebase_admin = require("firebase-admin");
+// import * as Promise from 'bluebird';
 class OgpGenerate {
     constructor() {
     }
-    get_fixed_ogphtml(full_url) {
+    get_fixed_ogp_meta(full_url) {
         const ogp_url = '<meta property="og:url" content="' + full_url + '" />';
         const ogp_title = '<meta property="og:title" content="online debate platform" />';
         const ogp_description = '<meta property="og:description" content=" online debate platform" />';
@@ -15,7 +16,7 @@ class OgpGenerate {
         console.log(ogp_meta_text);
         return ogp_meta_text;
     }
-    get_html(full_url, title, description) {
+    get_ogp_meta(full_url, title, description) {
         const ogp_url = '<meta property="og:url" content="' + full_url + '" />';
         const ogp_title = '<meta property="og:title" content="' + title + '" />';
         const ogp_description = '<meta property="og:description" content="' + description + '" />';
@@ -26,7 +27,7 @@ class OgpGenerate {
         console.log(ogp_meta_text);
         return ogp_meta_text;
     }
-    get_eventlist_html(full_url) {
+    get_eventlist_ogp_meta(full_url) {
         const ogp_url = '<meta property="og:url" content="' + full_url + '" />';
         const ogp_title = '<meta property="og:title" content="online debate platform" />';
         const ogp_description = '<meta property="og:description" content="event list for chosing the event" />';
@@ -37,7 +38,7 @@ class OgpGenerate {
         console.log(ogp_meta_text);
         return ogp_meta_text;
     }
-    get_articlelist_html(full_url) {
+    get_articlelist_ogp_meta(full_url) {
         const ogp_url = '<meta property="og:url" content="' + full_url + '" />';
         const ogp_title = '<meta property="og:title" content="online debate platform" />';
         const ogp_description = '<meta property="og:description" content="article list for reading all article" />';
@@ -55,14 +56,14 @@ class OgpGenerate {
             if (url_arr[1] === "event" && url_arr[2] === "eventcontext" && url_arr[3]) {
                 const event_id = url_arr[3];
                 this.retrieve_event_ogp(full_url, event_id).then((html_text) => {
-                    return resolve(html_text);
+                    resolve(html_text);
                 });
             }
             else if (url_arr[1] === "livevideo-debate-audio-serverrecognition" && url_arr[2]) {
                 console.log("categirized as livevideo-debate-audio-serverrecognition ");
                 const event_id = url_arr[2];
                 this.retrieve_audioserverrecognition_ogp(full_url, event_id).then((html_text) => {
-                    return resolve(html_text);
+                    resolve(html_text);
                 });
             }
             else if (url_arr[1] === "writtendebate-article2" && url_arr[2]) {
@@ -75,20 +76,20 @@ class OgpGenerate {
             else if (url_arr[1] === "livevideo-debate-audio" && url_arr[2]) {
                 const event_id = url_arr[2];
                 this.retrieve_audio_ogp(full_url, event_id).then((html_text) => {
-                    return resolve(html_text);
+                    resolve(html_text);
                 });
             }
             else if (url_arr[1] === "event" && url_arr[2] === "eventlist") {
-                const html_text = this.get_eventlist_html(full_url);
-                return resolve(html_text);
+                const html_text = this.get_eventlist_ogp_meta(full_url);
+                resolve(html_text);
             }
             else if (url_arr[1] === "article" && url_arr[2] === "articlelist") {
-                const html_text = this.get_articlelist_html(full_url);
-                return resolve(html_text);
+                const html_text = this.get_articlelist_ogp_meta(full_url);
+                resolve(html_text);
             }
             else {
-                const html_text = this.get_fixed_ogphtml(full_url);
-                return resolve(html_text);
+                const html_text = this.get_fixed_ogp_meta(full_url);
+                resolve(html_text);
             }
         });
     }
@@ -106,7 +107,7 @@ class OgpGenerate {
                 if (event_context.type === "ONLINE_DEBATE_LIVEVIDEO") {
                     title_text = "Online Live Video Debate Event from " + start_time_str + "&nbsp; (Differnt by the time zone)";
                     const detail_text = event_title;
-                    const html_text = this.get_html(full_url, title_text, detail_text);
+                    const html_text = this.get_ogp_meta(full_url, title_text, detail_text);
                     return resolve(html_text);
                 }
                 else if (event_context.type === "ONLINE_DEBATE_WRITTEN") {
@@ -114,7 +115,7 @@ class OgpGenerate {
                     const finish_time_str = finish_time.toUTCString();
                     title_text = "Online Written Debate Event &nbsp; --&nbsp; from " + start_time_str + "&nbsp; --&nbsp; to &nbsp; -- &nbsp;" + finish_time_str + " (Differnt by the time zone)";
                     const detail_text = event_title + " &nbsp; --  &nbsp; " + event_context.motion;
-                    const html_text = this.get_html(full_url, title_text, detail_text);
+                    const html_text = this.get_ogp_meta(full_url, title_text, detail_text);
                     return resolve(html_text);
                 }
             }).catch((err) => {
@@ -132,12 +133,12 @@ class OgpGenerate {
                 console.log("event_context", aurioarticle_context);
                 const title_text = "speech and transcription of online debate";
                 const detail_text = aurioarticle_context.motion;
-                const html_text = this.get_html(full_url, title_text, detail_text);
+                const html_text = this.get_ogp_meta(full_url, title_text, detail_text);
                 return resolve(html_text);
             }).catch((err) => {
                 console.log("error to retrieve event info from firebase", err);
                 // const html_text = get_fixed_ogphtml(full_url);
-                const html_text = this.get_fixed_ogphtml(full_url);
+                const html_text = this.get_fixed_ogp_meta(full_url);
                 ;
                 return resolve(html_text);
             });
@@ -152,12 +153,12 @@ class OgpGenerate {
                 console.log("event_context", event_context);
                 const title_text = "online written debate ";
                 const detail_text = event_context.motion;
-                const html_text = this.get_html(full_url, title_text, detail_text);
+                const html_text = this.get_ogp_meta(full_url, title_text, detail_text);
                 return resolve(html_text);
             }).catch((err) => {
                 console.log("error to retrieve event info from firebase, respond_writtendebatearticle2_ogp, ", err);
                 // const html_text = get_fixed_ogphtml(full_url);
-                const html_text = this.get_fixed_ogphtml(full_url);
+                const html_text = this.get_fixed_ogp_meta(full_url);
                 ;
                 return resolve(html_text);
             });
@@ -172,12 +173,12 @@ class OgpGenerate {
                 console.log("event_context", auriotranscript_context);
                 const title_text = "speech and transcription of online debate";
                 const detail_text = auriotranscript_context.motion;
-                const html_text = this.get_html(full_url, title_text, detail_text);
+                const html_text = this.get_ogp_meta(full_url, title_text, detail_text);
                 return resolve(html_text);
             }).catch((err) => {
                 console.log("error to retrieve event info from firebase, respond_audio_ogp, ", err);
                 // const html_text = get_fixed_ogphtml(full_url);
-                const html_text = this.get_fixed_ogphtml(full_url);
+                const html_text = this.get_fixed_ogp_meta(full_url);
                 ;
                 return resolve(html_text);
             });

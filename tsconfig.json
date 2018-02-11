@@ -8,13 +8,17 @@
         "./ts/group.ts",
         "./ts/article.ts",
         "./ts/ogp.ts",
-        "./ts/ogp-generate.ts"
+        "./ts/ogp-generate.ts",
+        "./ts/picture_resize.ts",
+        "./ts/Test.ts",
+        "./ts/Test2.ts",
   ],
   "compilerOptions": {
     "module":"commonjs",
     "target": "ES6",
     "typeRoots": [
       "node_modules/@types"
-    ]
+    ],
+    "lib": [ "es2015","dom" ]
   }
 }

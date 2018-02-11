@@ -192,7 +192,7 @@ export class Calendar{
             })
             console.log("participant_gmail_arr", participant_gmail_arr);
             if(participant_gmail_arr.length == 0){
-                return Promise.reject("no gmail info, so get out from promise chain");
+                throw new Error("no gmail info, so get out from promise chain");
             }
 
             return firebase_admin.database().ref(calendar_event_id_ref).once("value");

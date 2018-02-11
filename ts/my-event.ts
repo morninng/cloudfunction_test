@@ -57,7 +57,7 @@ export class MyEvent{
 
 
                 if(participate_value !== ParticipateInvited){
-                    return Promise.reject("cloud messaging won't be sent other than invited")
+                    throw new Error("cloud messaging won't be sent other than invited");
                 }
 
                 // retrieve user service worker token

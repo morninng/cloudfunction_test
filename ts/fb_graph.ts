@@ -13,12 +13,18 @@ export class FacebookGraph{
 
     retrieve_and_set_graph_profiledata = (user_id, token) => {
 
-        const graph_request_url = 
-        "https://graph.facebook.com/v2.7/me?access_token=" + token + 
-        "&fields=id,cover,name,first_name,last_name,age_range,link,gender,locale,picture,timezone,updated_time,verified&redirect=true";
-        console.log(graph_request_url);
+        const options = {
+            hostname: 'graph.facebook.com',
+            protocol: 'https',
+            port: 80,
+            path: '//v2.7/me?access_token=' + token + '&fields=id,cover,name,first_name,last_name,age_range,link,gender,locale,picture,timezone,updated_time,verified&redirect=true',
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        };
 
-        https.get(graph_request_url, (res) =>{
+        https.get(options, (res) =>{
         let body = '';
         res.on('data', (chunk)=>{
             body += chunk;

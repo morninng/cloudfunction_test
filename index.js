@@ -79,6 +79,13 @@ const ogp_generate = new OgpGenerate();
 const Article = require('./js/article.js');
 const article = new Article();
 
+const PictureResize = require('./js/picture_resize.js');
+const picture_resize = new PictureResize();
+
+const Test1 = require('./js/test.js')
+const test1 = new Test1();
+const Test2 = require('./js/test2.js')
+const test2 = new Test2();
 
 
 app.get('/event/eventcontext/-Ko_W2olTlOq_cKf7DkS', (req, res)=>{
@@ -99,6 +106,28 @@ app.get('/event/eventcontext/-Ko_W2olTlOq_cKf7DkS', (req, res)=>{
 })
 
 
+
+app.get('/test', (request, response) => {
+
+    return Promise.all([test1.multiplePromise(), test2.multiplePromise()])
+    .then(()=>{
+        console.log('test all finished');
+    }).catch(()=>{
+        console.log('failed');
+    });
+})
+
+app.get('/picture_resize', (request, response)=>{
+
+    const group_id = '-KoXL3VEaBumgmm4auiG';
+    const file_bucket = 'resize_test';
+    const file_path = 'angular2_dist.png';
+    const file_name = 'angular2_dist.png';
+
+    picture_resize.resize_group_coverphoto(group_id, file_bucket , file_path, file_name);
+
+
+})
 
 
 app.get('/get_auth_url', (request, response)=> {

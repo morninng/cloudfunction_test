@@ -39,7 +39,7 @@ class MyEvent {
                     return firebase_admin.database().ref(user_event_ref).set(user_event_data);
                 }).then(() => {
                     if (participate_value !== participate_1.ParticipateInvited) {
-                        return Promise.reject("cloud messaging won't be sent other than invited");
+                        throw new Error("cloud messaging won't be sent other than invited");
                     }
                     // retrieve user service worker token
                     const user_cloudmessaging_token_ref = "/users/serviceworker_token/" + user_id;

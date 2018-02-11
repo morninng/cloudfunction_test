@@ -9,19 +9,25 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/storage": "^1.2.1",
+    "@types/es6-promise": "^3.3.0",
     "body-parser": "^1.17.2",
+    "child-process-promise": "^2.2.1",
     "crypto": "0.0.3",
     "express": "^4.15.2",
     "firebase-admin": "^4.2.1",
+    "fs": "0.0.1-security",
     "google-auth-library": "^0.10.0",
     "googleapis": "^19.0.0",
     "ogp-parser": "^0.4.0",
-    "open-graph-scraper": "^2.5.4"
+    "open-graph-scraper": "^2.5.4",
+    "os": "^0.1.1",
+    "path": "^0.12.7"
   },
   "devDependencies": {
-    "@types/node": "^7.0.22",
+    "@types/node": "^7.0.54",
     "gulp": "^3.9.1",
-    "gulp-typescript": "^3.1.7",
-    "typescript": "^2.3.3"
+    "gulp-typescript": "^3.2.4",
+    "typescript": "^2.7.1"
   }
 }

@@ -1,7 +1,7 @@
 
 
 import * as firebase_admin from 'firebase-admin';
-
+// import * as Promise from 'bluebird';
 
 
 
@@ -77,7 +77,7 @@ export class OgpGenerate{
 
 
 
-    get_ogp(full_url, url_path){
+    get_ogp(full_url, url_path): Promise<any>{
 
         return new Promise((resolve, reject)=>{
 
@@ -88,13 +88,13 @@ export class OgpGenerate{
                 const event_id = url_arr[3];
                 this.retrieve_event_ogp( full_url, event_id).then((html_text)=>{
 
-                    return resolve(html_text);
+                    resolve(html_text);
                 });
             }else if (url_arr[1]==="livevideo-debate-audio-serverrecognition" && url_arr[2]){
                 console.log("categirized as livevideo-debate-audio-serverrecognition ")
                 const event_id = url_arr[2];
                 this.retrieve_audioserverrecognition_ogp( full_url, event_id).then((html_text)=>{
-                    return resolve(html_text);
+                    resolve(html_text);
                 });
             }else if (url_arr[1]==="writtendebate-article2" && url_arr[2]){
                 console.log("writtendebate-article2 ")
@@ -105,21 +105,21 @@ export class OgpGenerate{
             }else if(url_arr[1]==="livevideo-debate-audio" && url_arr[2]){
                 const event_id = url_arr[2];
                 this.retrieve_audio_ogp( full_url, event_id).then((html_text)=>{
-                    return resolve(html_text);
+                    resolve(html_text);
                 });
             }else if (url_arr[1]==="event" && url_arr[2]==="eventlist"){
 
                 const html_text =  this.get_eventlist_ogp_meta(full_url)
-                return resolve(html_text);
+                resolve(html_text);
 
             }else if (url_arr[1]==="article" && url_arr[2]==="articlelist"){
 
                 const html_text =  this.get_articlelist_ogp_meta(full_url)
-                return resolve(html_text);
+                resolve(html_text);
 
             } else {
                 const html_text = this.get_fixed_ogp_meta(full_url);
-                return resolve(html_text);
+                resolve(html_text);
             }
 
 

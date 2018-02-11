@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 
 
 import * as ogp_scraper from 'open-graph-scraper';
+// import * as Promise from 'bluebird';
 
 export class OGP{
 
@@ -42,7 +43,7 @@ export class OGP{
         .then((ogp_value)=>{
             ogp_value["hashed_key"] = hashed_key;
             const ogp_obj = {ogp: ogp_value}
-            const chat_data_with_ogp = Object.assign({}, {ogp: ogp_value},  chat_data);
+            const chat_data_with_ogp = (<any>Object).assign({}, {ogp: ogp_value},  chat_data);
             console.log("ogp_value is retrieved either after registration or already exist");
             return firebase_admin.database().ref(message_path).push(chat_data_with_ogp);
         }).then(()=>{
@@ -96,7 +97,7 @@ export class OGP{
             }).then((result)=>{
                 if(result && result.success){
 
-                    ogp_value = Object.assign({}, {url:url}, result.data);
+                    ogp_value = (<any>Object).assign({}, {url:url}, result.data);
                     console.log("retrieve ogp data succeed", ogp_value);
                     for(let key in ogp_value){
                         if(!ogp_value[key]){

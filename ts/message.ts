@@ -173,7 +173,7 @@ export class Message{
             const message_arr = [];
             snapshot.forEach((child_snapshot)=>{
                 if(child_snapshot.val().event_id === event_id){
-                    message_arr.push(Object.assign({},child_snapshot.val(), {key:child_snapshot.key}))
+                    message_arr.push((<any>Object).assign({},child_snapshot.val(), {key:child_snapshot.key}))
                 }else{
                     return false;
                 }

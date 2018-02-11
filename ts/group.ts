@@ -32,7 +32,7 @@ export class Group{
             const group_name = group_basic_data.group_name
             // key supposed to be user id
             for(let key in groupmember_obj){
-                let user_group_data = Object.assign( {}, groupmember_obj[key], {group_name:group_name} );
+                let user_group_data = (<any>Object).assign( {}, groupmember_obj[key], {group_name:group_name} );
                 this.set_group_on_user(key, group_id, user_group_data);
             }
         })

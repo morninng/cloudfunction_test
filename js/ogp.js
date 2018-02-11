@@ -4,6 +4,7 @@ const firebase_admin = require("firebase-admin");
 const crypto = require("crypto");
 // import * as ogp_parser from 'ogp-parser';
 const ogp_scraper = require("open-graph-scraper");
+// import * as Promise from 'bluebird';
 class OGP {
     constructor() {
         this.set_writtendebate_opinion_ogp = (opinion_path, url_arr) => {

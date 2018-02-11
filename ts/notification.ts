@@ -311,11 +311,11 @@ export class Notification{
                 date_time_start: event_date_time_start,
                 receiver_participate_status:null
             }
-            const event_notify_data_going : NotificatoinData_event = Object.assign({}, event_notification_data, {receiver_participate_status: ParticipateGoing} )
-            const event_notify_data_mayge : NotificatoinData_event = Object.assign({}, event_notification_data, {receiver_participate_status: ParticipateMaybe} )
-            const event_notify_data_invited : NotificatoinData_event = Object.assign({}, event_notification_data, {receiver_participate_status: ParticipateInvited} )
-            const event_notify_data_propositino : NotificatoinData_event = Object.assign({}, event_notification_data, {receiver_participate_status: ParticipateProposition} )
-            const event_notify_data_opposition : NotificatoinData_event = Object.assign({}, event_notification_data, {receiver_participate_status: ParticipateOpposition} )
+            const event_notify_data_going : NotificatoinData_event = (<any>Object).assign({}, event_notification_data, {receiver_participate_status: ParticipateGoing} )
+            const event_notify_data_mayge : NotificatoinData_event = (<any>Object).assign({}, event_notification_data, {receiver_participate_status: ParticipateMaybe} )
+            const event_notify_data_invited : NotificatoinData_event = (<any>Object).assign({}, event_notification_data, {receiver_participate_status: ParticipateInvited} )
+            const event_notify_data_propositino : NotificatoinData_event = (<any>Object).assign({}, event_notification_data, {receiver_participate_status: ParticipateProposition} )
+            const event_notify_data_opposition : NotificatoinData_event = (<any>Object).assign({}, event_notification_data, {receiver_participate_status: ParticipateOpposition} )
 
             participants_going.forEach((receiver_id)=>{
                 this.event_participate_user(event_id,  receiver_id, event_notify_data_going)
@@ -371,7 +371,7 @@ export class Notification{
             snapshots.forEach((child_snapshot)=>{
                 const notification_data = child_snapshot.val();
                 if(notification_data.event_id === event_id && notification_data.destination === notification_destination){
-                    notification_arr.push(Object.assign({},child_snapshot.val(), {key:child_snapshot.key}))
+                    notification_arr.push((<any>Object).assign({},child_snapshot.val(), {key:child_snapshot.key}))
                 }else{
                     return false;
                 }
