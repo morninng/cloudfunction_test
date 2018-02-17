@@ -1,22 +1,21 @@
-/// <reference path="./../node_modules/@types/node/index.d.ts" />
 
 import * as firebase_admin from 'firebase-admin';
 
-import * as http from 'http';
+// import * as http from 'http';
 import * as https from 'https';
 
-
+import { UserBasic, UserFbGraph } from './interface/User';
 
 export class FacebookGraph{
 
-    constructor(){}
+    // constructor(){}
 
-    retrieve_and_set_graph_profiledata = (user_id, token) => {
+    async retrieve_and_set_graph_profiledata(user_id, token): Promise<any>{
 
         const options = {
             hostname: 'graph.facebook.com',
-            protocol: 'https',
-            port: 80,
+            protocol: 'https:',
+            port: 443,
             path: '//v2.7/me?access_token=' + token + '&fields=id,cover,name,first_name,last_name,age_range,link,gender,locale,picture,timezone,updated_time,verified&redirect=true',
             method: 'GET',
             headers: {
@@ -24,39 +23,45 @@ export class FacebookGraph{
             }
         };
 
-        https.get(options, (res) =>{
-        let body = '';
-        res.on('data', (chunk)=>{
-            body += chunk;
-        })
-        res.on('end',(response)=>{
-            const graph_data = JSON.parse(body);
-            console.log(graph_data);
+        // const graph_request_url = 
+        // "https://graph.facebook.com/v2.7/me?access_token=" + token + 
+        // "&fields=id,cover,name,first_name,last_name,age_range,link,gender,locale,picture,timezone,updated_time,verified&redirect=true";
+        // console.log(graph_request_url);
 
-            const short_name = graph_data.first_name || graph_data.last_name || graph_data.name;
-            const user_basic_obj = {
+
+        return new Promise<UserFbGraph>( (resolve, reject)=> {
+
+            https.get(options, (res) =>{
+                let body = '';
+                res.on('data', (chunk)=>{
+                    body += chunk;
+                })
+                res.on('end',(response)=>{
+                    const graph_data: UserFbGraph = JSON.parse(body);
+                    console.log('graph_data', graph_data);
+                    if(graph_data &&graph_data.id && graph_data.name){
+                        resolve(graph_data);
+                    }else{
+                        reject(new Error('invalid graph data'));
+                    }
+                })
+                res.on('error', (e)=>{
+                    console.log("retrieving graph data failed", e.message);
+                    reject(new Error(e.message));
+                })
+            })
+
+        }).then((graph_data: UserFbGraph)=>{
+
+            const short_name: string = graph_data.first_name || graph_data.last_name || graph_data.name;
+            const user_basic_obj: UserBasic = {
             full_name: graph_data.name,
             fb_id: graph_data.id,
             short_name: short_name
             }
             const user_basic_ref = "/users/user_basic/" + user_id;
 
-            firebase_admin.database().ref(user_basic_ref).update(user_basic_obj).then((snapshot) => {
-                console.log("user basic info set ");
-                return;
-            }).catch(()=>{
-                console.log("saving data user basic failed ");
-                return;
-            });
-
             const fb_graph_ref = "/users/fb_graph/" + user_id;
-            firebase_admin.database().ref(fb_graph_ref).update(graph_data).then((snapshot) => {
-                console.log("fb graph data is set ");
-                return;
-            }).catch(()=>{
-                console.log("saving rb graph data failed ");
-                return;
-            });
 
             let fullname_lowercase = "";
             let first_name_lowercase = "";
@@ -81,21 +86,17 @@ export class FacebookGraph{
             }
 
             const search_ref = "/users/search/" + user_id;
-            firebase_admin.database().ref(search_ref).update(search_data).then((snapshot) => {
-                console.log("user search data is saved ");
-                return;
-            }).catch(()=>{
-                console.log("saving search data failed ");
-                return;
-            });
+            const updateObject = {}
+            updateObject[user_basic_ref] = user_basic_obj;
+            updateObject[fb_graph_ref] = graph_data;
+            updateObject[search_ref] = search_data;
+            console.log("updateObject", updateObject);
 
-        })
-        }).on('error', (e)=>{
-        console.log("retrieving graph data failed", e.message);
+            return firebase_admin.database().ref().update(updateObject)
         })
     }
 
 
 }
 
-module.exports = FacebookGraph;
+// module.exports = FacebookGraph;

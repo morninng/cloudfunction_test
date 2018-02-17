@@ -21,15 +21,13 @@ export class Test2{
     } 
 
 
-    async onePromise(value): Promise<any> {
+    async onePromise(value): Promise<string> {
         console.log('Test2 onePromise', value);
         return new Promise<string>((resolve, reject) => {
             setTimeout(()=>{
                 resolve('resolve:' + value);
             },100)
-        }).then(()=>{
-            console.log('finished', value);
-        });;
+        })
     }
 
 

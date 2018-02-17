@@ -3,160 +3,191 @@
 import * as firebase_admin from 'firebase-admin';
 
 
-import {client_secret} from './../secret/client_secret_mixideaproject'
+import { client_secret } from './secret/client_secret_mixideaproject'
 
 
-import {TEAM_PROPOSITION, TEAM_OPPOSITION, ParticipateCannotgo, ParticipateGoing,
-ParticipateMaybe,ParticipateInvited, ParticipateProposition, ParticipateOpposition } from './../interface/participate'
+import { ParticipateGoing, ParticipateMaybe, } from './interface/participate'
+import { EventData } from './interface/event-data';
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
 import * as google from 'googleapis';
 import * as googleAuth from 'google-auth-library';
 
-export class Calendar{
+const TOKEN_AVAILABLE = 'TOKEN_AVAILABLE';
+const TOKEN_EXPIRED = 'TOKEN_EXPIRED';
 
-    constructor(){}
-
-    // http function
-    get_auth_url(req, res){
-
-        const oauth2Client = this.get_oauth2Client();
-        if(!oauth2Client){
-            res.send("client_secret is not proper");
-        }
-        var authUrl = oauth2Client.generateAuthUrl({
-            access_type: 'offline',
-            scope: SCOPES
-        });
-        res.send("auth url : " + authUrl );
-
-    }
+export class Calendar {
 
 
     // http function
-    store_token(req, res){
-        const token_code = req.query.token;
+    async get_auth_url(): Promise<any> {
 
-        const oauth2Client = this.get_oauth2Client();
-        if(!oauth2Client){
-            res.send("client_secret is not proper");
-        }
-        oauth2Client.getToken(token_code, (err, token_store) => {
-            if (err) {
-                console.log('Error while trying to retrieve access token', err);
-                res.send("Error while trying to retrieve access token");
-                return;
+        return new Promise((resolve, reject) => {
+            const oauth2Client = this.get_oauth2Client();
+            if (!oauth2Client) {
+                reject(new Error("client_secret is not proper"));
             }
-            console.log("token_store", token_store);
-            this.store_token_firebase(token_store, req, res)
+            const authUrl = oauth2Client.generateAuthUrl({
+                access_type: 'offline',
+                scope: SCOPES
+            });
+            resolve("auth url : " + authUrl);
         });
     }
 
 
+    // http function api
+    async store_token(token_code): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const oauth2Client = this.get_oauth2Client();
+            if (!oauth2Client) {
+                reject(　new Error("client_secret is not proper"));
+            }
+            oauth2Client.getToken(token_code, (err, token_store) => {
+                if (err) {
+                    console.log('Error while trying to retrieve access token', err);
+                    reject(　new Error("Error while trying to retrieve access token"));
+                } else {
+                    console.log("token_store", token_store);
+                    resolve(token_store);
+                }
+            });
+        }).then((token_store) => {
+            return this.store_token_firebase(token_store);
+        });
+    }
+
 
     // http function
-    private store_token_firebase = (token_store, req, res) =>{
+    private async store_token_firebase(token_store): Promise<void> {
         const token_ref = "/admin/google_token/";
-        firebase_admin.database().ref(token_ref).set(token_store).then(
-            () => {
+        return firebase_admin.database().ref(token_ref).set(token_store)
+            .then(() => {
                 console.log("token is saved");
-                if(res){
-                    res.send("token is saved");
-                }
-                return;
-            }).catch(()=>{
+            }).catch(() => {
                 console.log("saving token is failed");
-                if(res){
-                    res.send("saving token is failed");
-                }
-                return;
-        });
+                throw new Error("saving token is failed");
+            });
     }
 
     // http function
-    listEvents(req, res){
+    listEvents(): Promise<string> {
 
-        const token_ref = "/admin/google_token/";
-        firebase_admin.database().ref(token_ref).once("value", 
-            (token_snapshot)=> {
-                const token = token_snapshot.val()
-                console.log("token", token);
-                if(!token){
-                    res.send("no token exist");
+        return new Promise((resolve, reject) => {
+
+            const token_ref = "/admin/google_token/";
+            firebase_admin.database().ref(token_ref).once("value",
+                (token_snapshot) => {
+                    const token = token_snapshot.val()
+                    console.log("token", token);
+                    if (!token) {
+                        reject(new Error("no token exist"))
+                    }
+                    const oauth2Client = this.get_oauth2Client();
+                    if (!oauth2Client) {
+                        console.log("client_secret is not proper")
+                        reject(new Error("client_secret is not proper"))
+                    }
+                    oauth2Client.credentials = token;
+                    // return this.listEvents_execute( oauth2Client);
+                    resolve(oauth2Client);
+                },
+                (error) => {
+                    console.log("token retrieve error")
+                    reject(new Error("token retrieve error"))
                     return;
                 }
-                const oauth2Client = this.get_oauth2Client();
-                if(!oauth2Client){
-                    res.send("client_secret is not proper");
-                }
-                oauth2Client.credentials = token;
-                this.listEvents_execute(req, res, oauth2Client);
-            },
-            (error)=>{
-                res.send("token retrieve error");
-                return;
-            });
+            );
 
+        }).then((oauth2Client) => {
+            return this.listEvents_execute(oauth2Client);
+        });
     }
 
-
-
-
-    private gettoken_executeAPI = (callback, data) =>{
+    private async gettoken_executeAPI(callback: (data: any, auth: any) => Promise<any>, data: any): Promise<any> {
 
         console.log("gettoken_executeAPI");
         const token_ref = "/admin/google_token/";
-        firebase_admin.database().ref(token_ref).once("value", 
-            (token_snapshot)=> {
-                const token = token_snapshot.val()
-                console.log("token", token);
-                if(!token){
-                    console.log("no token exist");
+        let oauth2Client = null;
+
+        return new Promise((resolve, reject) => {
+
+            firebase_admin.database().ref(token_ref).once("value",
+                (token_snapshot) => {
+                    const token = token_snapshot.val()
+                    console.log("token", token);
+                    if (!token) {
+                        console.log("no token exist");
+                        return;
+                    };
+                    console.log("token", token);
+
+                    oauth2Client = this.get_oauth2Client();
+                    if (!oauth2Client) {
+                        console.log("client_secret is not proper");
+                    }
+                    oauth2Client.credentials = token;
+
+                    if (oauth2Client.credentials.expiry_date < Date.now()) {
+                        console.log("access token is expired");
+                        resolve(TOKEN_EXPIRED);
+
+                    } else {
+                        console.log("access token is NOT expired");
+                        resolve(TOKEN_AVAILABLE);
+                    }
+                },
+                (error) => {
+                    console.log("token retrieve error");
                     return;
-                };
-                console.log("token", token);
-
-                const oauth2Client = this.get_oauth2Client();
-                if(!oauth2Client){
-                    console.log("client_secret is not proper");
                 }
-                oauth2Client.credentials = token;
+            );
+        }).then((token_status) => {
 
-                if(oauth2Client.credentials.expiry_date < Date.now()){
-                    console.log("access token is expired");
-                    this.reflesh_access_token(oauth2Client, callback, data);
-                }else{
-                    console.log("access token is NOT expired");
-                    callback(data, oauth2Client);
-                }
-            },
-            (error)=>{
-                console.log("token retrieve error");
-                return;
-            });
-    }
+            if (token_status === TOKEN_AVAILABLE) {
 
+                return callback(data, oauth2Client);
 
-    private reflesh_access_token = (oauth2Client, callback, data) => {
-    if(oauth2Client.credentials && oauth2Client.credentials.refresh_token){
-        const reflesh_token = oauth2Client.credentials.refresh_token;
-        oauth2Client.refreshAccessToken( (err, refreshed_tokens)=>{
-        if(!err){
-            console.log(refreshed_tokens)
-        }
-        console.log("refleshed token", refreshed_tokens)
-        oauth2Client.credentials = refreshed_tokens;
-        callback(data, oauth2Client);
-        this.store_token_firebase(refreshed_tokens, null, null);
-
+            } else if (token_status === TOKEN_EXPIRED) {
+                return this.reflesh_access_token(oauth2Client, callback, data);
+            }
         })
-    }
 
     }
 
 
-    update_calendar_for_eventupdate = (event_id) =>{
+    private reflesh_access_token(oauth2Client, callback: (data: any, auth: any) => Promise<any>, data): Promise<any> {
+
+        return new Promise((resolve, reject) => {
+
+            if (oauth2Client.credentials && oauth2Client.credentials.refresh_token) {
+                // const reflesh_token = oauth2Client.credentials.refresh_token;
+                oauth2Client.refreshAccessToken((err, refreshed_tokens) => {
+                    if (!err) {
+                        console.log(refreshed_tokens)
+                    }
+                    console.log("refleshed token", refreshed_tokens)
+                    oauth2Client.credentials = refreshed_tokens;
+
+                    resolve(refreshed_tokens);
+
+                })
+            } else {
+                throw new Error('refreshing token failed');
+            }
+        }).then((refreshed_tokens) => {
+            return this.store_token_firebase(refreshed_tokens);
+        }).then(() => {
+            return callback(data, oauth2Client);
+        })
+
+
+
+    }
+
+
+    async update_calendar_for_eventupdate(event_id): Promise<void> {
 
 
         const participant_arr = [];
@@ -166,50 +197,53 @@ export class Calendar{
         const event_ref = "/event_related/event/" + event_id;
         const google_profile_ref = "/users/google_profile";
         const calendar_event_id_ref = "/event_related/calendar_event/" + event_id;
-        firebase_admin.database().ref(event_ref).once("value")
-        .then( (snapshot)=>{
-            event_data = snapshot.val();
-            console.log("event_data", event_data);
+        return firebase_admin.database().ref(event_ref).once("value")
+            .then((snapshot) => {
+                event_data = snapshot.val();
+                console.log("event_data", event_data);
 
-            const participant_obj = event_data.participants || {};
+                const participant_obj = event_data.participants || {};
 
-            for(let key in participant_obj){
-                if(participant_obj[key]==='ParticipateGoing' || participant_obj[key]==='ParticipateMaybe'){
-                    participant_arr.push(key);
+                for (const key in participant_obj) {
+                    if (participant_obj[key] === 'ParticipateGoing' || participant_obj[key] === 'ParticipateMaybe') {
+                        participant_arr.push(key);
+                    }
                 }
-            }
-            console.log("participant_arr", participant_arr);
+                console.log("participant_arr", participant_arr);
 
-            return firebase_admin.database().ref(google_profile_ref).once("value");
+                return firebase_admin.database().ref(google_profile_ref).once("value");
 
-        }).then((snapshot)=>{
-            const google_profile = snapshot.val() || {};
+            }).then((snapshot) => {
+                const google_profile = snapshot.val() || {};
 
-            participant_arr.forEach((element)=>{
-                if(element && google_profile && google_profile[element] && google_profile[element].email){
-                    participant_gmail_arr.push(google_profile[element].email);
+                participant_arr.forEach((element) => {
+                    if (element && google_profile && google_profile[element] && google_profile[element].email) {
+                        participant_gmail_arr.push(google_profile[element].email);
+                    }
+                })
+                console.log("participant_gmail_arr", participant_gmail_arr);
+                if (participant_gmail_arr.length === 0) {
+                    throw new Error('no gmail for this user');
                 }
+
+                return firebase_admin.database().ref(calendar_event_id_ref).once("value");
+            }).then((snapshot) => {
+                const previous_calendar_event_id = snapshot.val();
+                console.log("previous_calendar_id", previous_calendar_event_id);
+
+                return this.gettoken_executeAPI(
+                    this.update_googlecalendar_event,
+                    { event_id, event_data, participant_gmail_arr, previous_calendar_event_id }
+                )
+
+
+            }).catch((err) => {
+                console.log("error", err);
             })
-            console.log("participant_gmail_arr", participant_gmail_arr);
-            if(participant_gmail_arr.length == 0){
-                throw new Error("no gmail info, so get out from promise chain");
-            }
-
-            return firebase_admin.database().ref(calendar_event_id_ref).once("value");
-        }).then((snapshot)=>{
-            const previous_calendar_event_id = snapshot.val();
-            console.log("previous_calendar_id", previous_calendar_event_id);
-
-            this.gettoken_executeAPI(this.update_googlecalendar_event, {event_id, event_data, participant_gmail_arr, previous_calendar_event_id})
-
-
-        }).catch((err)=>{
-            console.log("error", err);
-        })
     }
 
 
-    private update_googlecalendar_event = (data, auth) => {
+    private async update_googlecalendar_event(data, auth): Promise<any> {
 
         console.log("create_googlecalendar_event");
         const event_data = data.event_data
@@ -219,27 +253,27 @@ export class Calendar{
 
         const attendees = [];
 
-        participant_gmail_arr.forEach((element)=>{
-            attendees.push({email: element});
+        participant_gmail_arr.forEach((element) => {
+            attendees.push({ email: element });
         })
-        const date_time_start = new Date( event_data.date_time_start);
-        const date_time_finish = new Date( event_data.date_time_finish);
+        const date_time_start = new Date(event_data.date_time_start);
+        const date_time_finish = new Date(event_data.date_time_finish);
         const date_time_start_iso = date_time_start.toISOString();
         const date_time_finish_iso = date_time_finish.toISOString();
 
         const event_url = "https://mixidea.org/event/eventcontext/" + event_id;
 
-        var calendar_event = {
+        const calendar_event = {
             'summary': 'online debate: ' + event_data.title,
             'location': 'from your home computer',
-            'description': 
-                "go to event page from here" + 
+            'description':
+                "go to event page from here" +
                 "\n " + event_url +
                 "\n" +
-                "\n You need to prepare following items" + 
-                "\n - Google Chrome browser" + 
-                "\n - headset with microphone" + 
-                "\n - Desktop , Laptop, Netbook" + 
+                "\n You need to prepare following items" +
+                "\n - Google Chrome browser" +
+                "\n - headset with microphone" +
+                "\n - Desktop , Laptop, Netbook" +
                 "\n\n   (*) iphone, ipad is NOT available!!" +
                 "\n\n",
             'start': {
@@ -252,60 +286,75 @@ export class Calendar{
             'reminders': {
                 'useDefault': false,
                 'overrides': [
-                {'method': 'email', 'minutes': 10 * 60},
-                {'method': 'popup', 'minutes': 10},
+                    { 'method': 'email', 'minutes': 10 * 60 },
+                    { 'method': 'popup', 'minutes': 10 },
                 ],
             }
         };
         console.log("calendar_event", calendar_event);
 
 
-        var calendar = google.calendar('v3');
+        const calendar = google.calendar('v3');
 
-        if(previous_calendar_event_id){
-            calendar.events.update(
-                {auth: auth,calendarId: 'primary',resource: calendar_event, eventId: previous_calendar_event_id},
-                (err, calendar_event)=> {
-                    if (err) {
-                        console.log('updating calendar event error ' + err);
-                        return;
+
+        if (previous_calendar_event_id) {
+            return new Promise((resolve, reject) => {
+
+                calendar.events.update(
+                    { auth: auth, calendarId: 'primary', resource: calendar_event, eventId: previous_calendar_event_id },
+                    (err, calendar_event_data) => {
+                        if (err) {
+                            console.log('updating calendar event error ' + err);
+                            reject('updating calendar event error ')
+                            return;
+                        } else {
+                            console.log('Event updated: %s', calendar_event_data.htmlLink);
+                            console.log('updated event id', calendar_event_data.id)
+                            resolve('updated event id' + calendar_event_data.id);
+                            return;
+                        }
                     }
-                    console.log('Event updated: %s', calendar_event.htmlLink);
-                    console.log('updated event id', calendar_event.id)
-                }
-            );
+                );
 
-        }else{
+            })
+        } else {
 
-            calendar.events.insert(
-                {auth: auth,calendarId: 'primary',resource: calendar_event},
-                (err, calendar_event)=> {
-                    if (err) {
-                        console.log('insert calendar event error: ' + err);
-                        return;
+            return new Promise((resolve, reject) => {
+
+                calendar.events.insert(
+                    { auth: auth, calendarId: 'primary', resource: calendar_event },
+                    (err, calendar_event_data) => {
+                        if (err) {
+                            console.log('insert calendar event error: ' + err);
+                            reject(new Error('insert calendar event error: ' + err));
+                            return;
+                        }
+                        console.log('Event created: %s', calendar_event_data.htmlLink);
+                        console.log('event id', calendar_event_data.id)
+                        resolve(calendar_event);
                     }
-                    console.log('Event created: %s', calendar_event.htmlLink);
-                    console.log('event id', calendar_event.id)
-                    this.save_calendar_event_id(event_id, calendar_event.id)
-                }
-            );
+                );
+            }).then((calendar_event_data: any) => {
+                return this.save_calendar_event_id(event_id, calendar_event_data.id)
+
+            });
         }
     }
 
 
-    private save_calendar_event_id = (event_id, calendar_event_id)=> {
+    private async save_calendar_event_id(event_id, calendar_event_id): Promise<any> {
 
         const calendar_event_id_ref = "/event_related/calendar_event/" + event_id;
 
 
-        firebase_admin.database().ref(calendar_event_id_ref).set(calendar_event_id).then(
+        return firebase_admin.database().ref(calendar_event_id_ref).set(calendar_event_id).then(
             () => {
                 console.log("calendar_eventid is saved");
                 return;
-            }).catch(()=>{
+            }).catch(() => {
                 console.log("saving calendar_eventid is failed");
                 return;
-        });
+            });
     }
 
 
@@ -321,85 +370,94 @@ export class Calendar{
 
 
 
-    private get_oauth2Client = ()=>{
+    private get_oauth2Client = () => {
 
-        if(!client_secret || !client_secret.installed){
+        if (!client_secret || !client_secret.installed) {
             console.log("slient_secret does not exist");
             return null;
         }
-        var clientSecret = client_secret.installed.client_secret;
-        var clientId = client_secret.installed.client_id;
-        var redirectUrl = client_secret.installed.redirect_uris[0];
-        if(!clientId || !clientSecret || !redirectUrl){
+        const clientSecret = client_secret.installed.client_secret;
+        const clientId = client_secret.installed.client_id;
+        const redirectUrl = client_secret.installed.redirect_uris[0];
+        if (!clientId || !clientSecret || !redirectUrl) {
             console.log("client_secret is not proper");
             return null;
         }
-        var auth = new googleAuth();
+        const auth = new googleAuth();
         const oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
         return oauth2Client;
     }
 
 
-    private listEvents_execute = (req, res, auth)=>{
+    private listEvents_execute(auth): Promise<string> {
+        console.log('listEvents_execute start')
 
-        var calendar = google.calendar('v3');
-        calendar.events.list({
-            auth: auth,
-            calendarId: 'primary',
-            timeMin: (new Date()).toISOString(),
-            maxResults: 10,
-            singleEvents: true,
-            orderBy: 'startTime'
-        }, (err, response) => {
-            if (err) {
-            console.log('The API returned an error: ' + err);
-            return;
-            }
-            var events = response.items;
-            if (events.length == 0) {
-                console.log('No upcoming events found.');
-                res.send("No upcoming events found.");
-                return;
-            } else {
-            console.log('Upcoming 10 events:');
-            for (var i = 0; i < events.length; i++) {
-                var event = events[i];
-                var start = event.start.dateTime || event.start.date;
-                console.log('%s - %s', start, event.summary);
-            }
-            console.log('Upcoming 10 events:' + JSON.stringify(events));
-            res.send('Upcoming 10 events:' + JSON.stringify(events));
-
-            return;
-            }
-        });
+        return new Promise((resolve, reject) => {
+            const calendar = google.calendar('v3');
+            calendar.events.list({
+                auth: auth,
+                calendarId: 'primary',
+                timeMin: (new Date()).toISOString(),
+                maxResults: 10,
+                singleEvents: true,
+                orderBy: 'startTime'
+            }, (err, response) => {
+                if (err) {
+                    console.log('The API returned an error: ' + err);
+                    reject(new Error('The API returned an error: ' + err));
+                    return;
+                }
+                const events = response.items;
+                console.log('events', events);
+                if (events.length === 0) {
+                    console.log('No upcoming events found.');
+                    resolve("No upcoming events found.");
+                    return;
+                } else {
+                    for (let i = 0; i < events.length; i++) {
+                        const event = events[i];
+                        const start = event.start.dateTime || event.start.date;
+                        console.log('%s - %s', start, event.summary);
+                    }
+                    console.log('Upcoming 10 events:' + JSON.stringify(events))
+                    resolve('Upcoming 10 events:' + JSON.stringify(events));
+                    return;
+                }
+            });
+        })
     }
 
-    update_calendar_for_user = (user_id)=>{
+    async update_calendar_for_user(user_id): Promise<any> {
         console.log("update_calendar_for_user");
-
         const current_time = Date.now();
         console.log("current_time", current_time);
-        const retrieve_start_time = current_time - 3*24*60*60*1000;
+        const retrieve_start_time = current_time - 3 * 24 * 60 * 60 * 1000;
 
-        const my_event_ref = firebase_admin.database().ref("users/my_event/" + user_id);
-        my_event_ref.orderByChild("date_time_start").startAt(retrieve_start_time).on("child_added",
-            (snapshot)=>{
-                console.log("my event value", snapshot.val());
-                console.log("my event key", snapshot.key);
-                const event_id = snapshot.key;
-                console.log("event id of google profile change", event_id)
-                const event_type = snapshot.val().type;
-                if(event_type == ParticipateGoing || event_type == ParticipateMaybe){
-                    console.log("going or maybe event", snapshot.key);
-                    this.update_calendar_for_eventupdate(event_id);
+        return new Promise((resolve, reject) => {
+            const my_event_ref = firebase_admin.database().ref("users/my_event/" + user_id);
+            my_event_ref.once("value",
+                (snapshot) => {
+
+                    const event_arr = snapshot.val();
+                    if (event_arr) {
+                        resolve(event_arr);
+                    } else {
+                        reject();
+                    }
+                }
+            )
+        }).then((event_arr) => {
+            const promise_arr: Promise<void>[] = [];
+            for (const key in event_arr) {
+                const event_data: EventData = event_arr[key];
+                const event_id = key;
+                const event_type = event_data.type;
+                if ((event_data.date_time_start > retrieve_start_time) && (event_type === ParticipateGoing || event_type === ParticipateMaybe)) {
+                    promise_arr.push(this.update_calendar_for_eventupdate(event_id))
                 }
             }
-        )
-
-
+            return Promise.all(promise_arr);
+        })
     }
 
 }
-
-module.exports = Calendar;

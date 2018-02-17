@@ -2,3 +2,17 @@
 
 
 
+4/AABW-UWKWxRnCBkK4Zn-8tLgodkGjxKtzW2w7Bk62iQjNxGRJjh182A
+
+Tokenの取得順序
+
+
+http://localhost:3000/get_auth_url
+　→これで、urlを取得
+http://localhost:3000/store_token?token=4/AABW-UWKWxRnCBkK4Zn-8tLgodkGjxKtzW2w7Bk62iQjNxGRJjh182A
+　→取得したtokenを設定してリクエスト
+
+http://localhost:3000/store_token?token=4/AAASD8A_n9EheG2CQHLbayX_RIxYQorBxlVV0ojVOB5xU6nakqtj0Cs
+
+http://localhost:3000/listEvents
+　→これで、動作確認

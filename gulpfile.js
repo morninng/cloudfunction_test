@@ -12,7 +12,14 @@ gulp.task("default", function () {
 
 gulp.task("build", function () {
     console.log('build ts');
-    gulp.src('./ts/*.ts')
+    gulp.src('./ts/**/*.ts')
         .pipe(tsProject())
         .js.pipe(gulp.dest('./lib'))
 });
+
+
+
+gulp.task("mv_json", function(){
+    gulp.src('./ts/**/*.json')
+    .pipe(gulp.dest('./lib'))
+})

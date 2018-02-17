@@ -11,7 +11,8 @@ export class Test1{
 
     async multiplePromise(): Promise<any> {
         console.log('Test1, multiplePromise')
-        const arr = ['aaa', 'bbb'];
+        // const arr = ['aaa', 'bbb'];
+        const arr = [];
         const promise_arr = []
         arr.forEach((value)=>{
             promise_arr.push(this.onePromise(value));
@@ -21,15 +22,32 @@ export class Test1{
     } 
 
 
-    async onePromise(value) {
+    async onePromise(value): Promise<void> {
         console.log('Test1 onePromise', value);
-        return new Promise((resolve, reject) => {
+
+        if(value === 'aaa'){
+            return this.secondlayerPromise('sss');
+        } else{
+            return new Promise((resolve, reject) => {
+                setTimeout(()=>{
+                    resolve('resolve:' + value);
+                },100)
+            }).then(()=>{
+                console.log('finished', value);
+            });
+        }
+    }
+
+    async secondlayerPromise(value): Promise<void>{
+        console.log('Test2 onePromise', value);
+        return new Promise<string>((resolve, reject) => {
             setTimeout(()=>{
                 resolve('resolve:' + value);
             },100)
-        }).then(()=>{
-            console.log('finished', value);
-        });
+        })
+        .then(()=>{
+            console.log('secondlayerPromise finished');
+        })
     }
 
 

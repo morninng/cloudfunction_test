@@ -2,7 +2,7 @@
 const firebase_admin = require('firebase-admin');
 
 import {TEAM_PROPOSITION, TEAM_OPPOSITION, ParticipateCannotgo, ParticipateGoing,
-ParticipateMaybe,ParticipateInvited, ParticipateProposition, ParticipateOpposition } from './../interface/participate'
+ParticipateMaybe,ParticipateInvited, ParticipateProposition, ParticipateOpposition } from './interface/participate'
 
 
 interface  UserEventData  {
@@ -12,10 +12,10 @@ interface  UserEventData  {
 
 export class MyEvent{
 
-    constructor(){}
+    // constructor(){}
 
 
-    add_event = (event_id, user_id, participate_value, is_event_exist) => {
+    async add_event(event_id, user_id, participate_value, is_event_exist): Promise<any> {
 
         console.log("my_event add_event is called");
         const user_event_ref = "/users/my_event/" + user_id + "/" + event_id;
@@ -27,7 +27,9 @@ export class MyEvent{
         if(!is_event_exist){
 
             console.log("no data for user participant");
-            firebase_admin.database().ref(user_event_ref).remove().then((snapshot) => {
+            return firebase_admin.database().ref(user_event_ref)
+            .remove()
+            .then((snapshot) => {
                 console.log("data is removed ");
                 return;
             }).catch(()=>{
@@ -40,7 +42,8 @@ export class MyEvent{
             // read the event start time
             const event_starttime_ref = "/event_related/event/" + event_id + "/date_time_start";
             console.log("event_starttime_ref", event_starttime_ref);
-            firebase_admin.database().ref(event_starttime_ref).once("value", (snapshot)=>{
+
+            return firebase_admin.database().ref(event_starttime_ref).once("value", (snapshot)=>{
                 start_time = snapshot.val();
                 console.log("event start time", start_time);
                 if(participate_value && start_time){
@@ -57,6 +60,7 @@ export class MyEvent{
 
 
                 if(participate_value !== ParticipateInvited){
+                    // return Promise.reject("cloud messaging won't be sent other than invited");
                     throw new Error("cloud messaging won't be sent other than invited");
                 }
 
@@ -71,7 +75,7 @@ export class MyEvent{
                     user_token_arr.push(token_data[key]);
                 }
                 console.log("user_token_arr", user_token_arr);
-                if(user_token_arr.length == 0){
+                if(user_token_arr.length === 0){
                     console.log("no token found for this user");
                     return;
                 }
@@ -120,4 +124,4 @@ export class MyEvent{
 }
 
 
- module.exports = MyEvent;
+//  module.exports = MyEvent;

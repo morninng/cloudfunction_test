@@ -16,7 +16,7 @@ firebase_admin.initializeApp({
 */
 
 
-var serviceAccount = require("./../secret/mixidea-test-a2f1f-firebase-adminsdk-3os68-99265568e8.json");
+var serviceAccount = require("./secret/mixidea-test-a2f1f-firebase-adminsdk-3os68-99265568e8.json");
 firebase_admin.initializeApp({
   credential: firebase_admin.credential.cert(serviceAccount),
   databaseURL: "https://mixidea-test-a2f1f.firebaseio.com"
@@ -118,7 +118,17 @@ app.get('/event/eventcontext/-Ko_W2olTlOq_cKf7DkS', (req, res)=>{
 
 })
 
+app.get('/test1', (request, response) => {
 
+    return test1.multiplePromise()
+    .then(()=>{
+        console.log('test all finished');
+        response.send('test all finished');
+    }).catch(()=>{
+        console.log('failed');
+        response.send('test all failed');
+    });
+  })
 
 app.get('/test', (request, response) => {
 
@@ -149,7 +159,7 @@ app.get('/get_auth_url', (request, response)=> {
     return calendar.get_auth_url()
     .then((data)=>{
         console.log("get_auth_url then")
-        response.send(data);
+        response.send( JSON.stringify( data) );
     }).catch((err)=>{
         console.log("get_auth_url error", err);
         response.error(err);
@@ -159,7 +169,16 @@ app.get('/get_auth_url', (request, response)=> {
 
 
 app.get('/store_token', (request, response)=> {
-calendar.store_token(request, response);
+    const token_code = request.query.token;
+    return calendar.store_token(token_code)
+    .then((data)=>{
+        console.log("store_token then")
+        response.send( JSON.stringify( data));
+    }).catch((err)=>{
+        console.log("store_token error" + JSON.stringify(err));
+        response.sendStatus(500);
+    });
+    
 });
 
 
@@ -167,12 +186,13 @@ app.get('/listEvents', (request, response)=> {
     return calendar.listEvents()
     .then((data)=>{
         console.log("get_auth_url then")
-        response.send(data);
+        response.send( JSON.stringify( data));
     }).catch((err)=>{
         console.log("get_auth_url error", err);
         response.error(err);
     });
 });
+
 
 app.get('/eventchatmain_read', (request, response)=> {
 
@@ -181,7 +201,14 @@ app.get('/eventchatmain_read', (request, response)=> {
   console.log("eventchat_read", event_id);
   console.log("eventchat_read", user_id);
 
-  message.eventchat_read(event_id, user_id);
+  return message.eventchat_read(event_id, user_id)
+  .then((data)=>{
+        console.log("get_auth_url then")
+        response.send( JSON.stringify( data));
+    }).catch((err)=>{
+        console.log("get_auth_url error", err);
+        response.error(err);
+    });
 
 });
 
@@ -203,13 +230,19 @@ app.post('/ogp_writtendebate_url', (request, response)=> {
 
 app.get('/set_chat_message', (request, response)=> {
 
-  const message = "https://www.yahoo.co.jp/";
+  const message_data = "https://www.yahoo.co.jp/";
   const message_path = "dddddddddddd";
   const current_full_path = "llllll";
   const chat_data = {user_id:"ssss", message: "llll"}
 
-  ogp.set_chat_message(message, message_path, current_full_path, chat_data);
-  response.send("message passed");
+  return ogp.set_chat_message(message_data, message_path, current_full_path, chat_data)
+  .then((data)=>{
+        console.log("set_chat_message then");
+        response.send("set_chat_message then");
+    }).catch((err)=>{
+        console.log("set_chat_message error", err);
+        response.sendStatus(500);
+    });
 
 });
 
@@ -238,7 +271,14 @@ app.get('/notification_read', (request, response)=> {
 app.get('/google_profile_monitor', (request, response)=> {
 
   const user_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
-  calendar.update_calendar_for_user(user_id);
+  return calendar.update_calendar_for_user(user_id)
+  .then((data)=>{
+        console.log("update_calendar_for_user then");
+        response.send("update_calendar_for_user then" + JSON.stringify( data));
+    }).catch((err)=>{
+        console.log("update_calendar_for_user error", err);
+        response.sendStatus(500);
+    });
 
 });
 
@@ -247,8 +287,14 @@ app.get('/google_profile_monitor', (request, response)=> {
 app.get('/event_monitor', (request, response)=> {
 
   const event_id = "-Kid148AQD3DC5ftdsuX";
-  calendar.update_calendar_for_eventupdate(event_id);
-
+  return calendar.update_calendar_for_eventupdate(event_id)
+    .then((data)=>{
+        console.log("update_calendar_for_user then");
+        response.send("update_calendar_for_user then" + JSON.stringify( data));
+    }).catch((err)=>{
+        console.log("update_calendar_for_user error", err);
+        response.sendStatus(500);
+    });
 });
 
 app.get('/event_monitor_group_copy', (request, response)=> {
@@ -256,20 +302,33 @@ app.get('/event_monitor_group_copy', (request, response)=> {
   const event_id = "-Kid148AQD3DC5ftdsuX";
   const group_id = "aaa"
   const event_data = {bb:"bb"};
-  group.set_groupevent(event_id, group_id, event_data);
+  return group.set_groupevent(event_id, group_id, event_data)
+  .then((data)=>{
+        console.log("set_groupevent then");
+        response.send("set_groupevent then" + JSON.stringify( data));
+    }).catch((err)=>{
+        console.log("set_groupevent error", err);
+        response.sendStatus(500);
+    });
 
 });
 
 app.get('/group_member_monitor', (request, response)=> {
 
-  const group_id = "-KoTANyTXhDqffs3_gnl"
+  const group_id = "-Koa6o3j-sGe132a6rJT"
   const groupmember_obj = {
       user_aaa:{role:"administrator", join_time:"XXXX", added_by:"sss"},
       user_bbb:{role:"administrator", join_time:"YYYY", added_by:"ttt"}
   };
   
-  group.set_group_member( group_id, groupmember_obj);
-
+    return group.set_group_member( group_id, groupmember_obj)
+    .then((data)=>{
+        console.log("set_groupevent then");
+        response.send("set_groupevent then" + JSON.stringify( data));
+    }).catch((err)=>{
+        console.log("set_groupevent error", err);
+        response.sendStatus(500);
+    });
 });
 
 
@@ -285,7 +344,15 @@ app.get('/set_writtendebate2_to_participant', (request, response)=> {
   const event_id = "-Kjry3ylbB2kKQLmPMO0"
 
   
-  article.set_writtendebate2_to_participant( event_id );
+  return article.set_writtendebate2_to_participant( event_id )
+  .then((data)=>{
+        console.log("set_writtendebate2_to_participant then");
+        response.send("set_writtendebate2_to_participant then" + JSON.stringify( data));
+    }).catch((err)=>{
+        console.log("set_writtendebate2_to_participant error", err);
+        response.sendStatus(500);
+    });
+
 
 });
 
@@ -295,8 +362,14 @@ app.get('/audiotranscript_to_sender', (request, response)=> {
   const event_id = "-Kl2lXCnBqXP1QnTe0zC"
   const sender_id = "QWgHYtTwvyNpwEsXjqswL0ZbPFO2"
 
-  article.set_audiotranscript_to_sender( event_id, sender_id );
-
+  return article.set_audiotranscript_to_sender( event_id, sender_id )
+    .then((data)=>{
+        console.log("audiotranscript_to_sender then");
+        response.send("audiotranscript_to_sender then" + JSON.stringify( data));
+    }).catch((err)=>{
+        console.log("audiotranscript_to_sender error", err);
+        response.sendStatus(500);
+    });
 });
 
 
@@ -305,7 +378,14 @@ app.get('/writtendebate2_to_sender', (request, response)=> {
   const event_id = "-Kjry3ylbB2kKQLmPMO0"
   const sender_id = "QWgHYtTwvyNpwEsXjqswL0ZbPFO2"
 
-  article.set_writtendebate2_to_sender( event_id, sender_id );
+  return article.set_writtendebate2_to_sender( event_id, sender_id )
+    .then((data)=>{
+        console.log("writtendebate2_to_sender then");
+        response.send("writtendebate2_to_sender then" + JSON.stringify( data));
+    }).catch((err)=>{
+        console.log("writtendebate2_to_sender error", err);
+        response.sendStatus(500);
+    });
 
 });
 
@@ -328,44 +408,77 @@ app.get('/eventparticipate_monitor', (request, response)=> {
 
   const event_id = "-Kid148AQD3DC5ftdsuX";
   const user_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
-  const participate_value = ParticipateGoing
-  const is_event_exist = true;
+  const participate_value = ParticipateGoing 
+//   const participate_value = ParticipateInvited
+//   const is_event_exist = true;
+  const is_event_exist = false;
 
-  my_event.add_event(event_id, user_id, participate_value, is_event_exist);
-  calendar.update_calendar_for_eventupdate(event_id);
+  return my_event.add_event(event_id, user_id, participate_value, is_event_exist)
+  .then(()=>{
+      return calendar.update_calendar_for_eventupdate(event_id);
+  }).then(()=>{
+    return notification.event_participate(event_id);
+  }).then(()=>{
+      console.log('add event, update calendar, and event participate has succeed');
+      response.send('all success');
+  }).catch(()=>{
+      response.sendStatus(500);
+  })
 
-  notification.event_participate(event_id);
+  
 });
 
 
 
-app.get('/userregist_monitor', (req, res)=> {
+app.get('/userregist_monitor', (request, response)=> {
 
   const user_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
-  const token = "EAAHjdmjMJ6cBAOlQyU8J2PvFhpqunNVZBceJAFj2NZCQ1qoaqd6XFOwPw7ZCS1N6k4wrHrls4j8ZCyOE6HBFjtELZADHBsiLVsJXCsZCLwOfT17wmGBocVY8k4MKPO9MLnZBsVlZCGt99GR72OikPWL8mlwJl7tOhhMJUZCmZAIEJuywZDZD";
-  fb_graph.retrieve_and_set_graph_profiledata(user_id, token)
+//   const token = "EAAHjdmjMJ6cBAHbswQ80tz8OTZA3SHixbQutHeI22fUinmiMlSdgBypmX0olvAFy7AfcHHTmotf8uIJtkvYzrz1zxycNitHlA82Q3JIkeUZAquUWRVn8JKt3EZCDhnXuyPnT78MCZBkyYJZAaYs6MZASZCqfcUBMTZBroVsEgBsI5gZDZD";
+  const token = "EAAHjdmjMJ6cBADj9TdEc5nI8NpU8OFY9oLypZAftMqu35dkEd0QZBi7cpgDh15sYNk9LT2lVTQC0IvJF1RBTpcF0CL30787P4b7ZAfKYu8ktuLbKpkO0cDv2ntFYAdcX1O5HHjZBBYlEyAMygUHshuoofkd4cSCLLHJKkIjVrgZDZD";
+  const wrong_token = "EssssAAHjdmjMJ6cBAOlQyU8J2PvFhpqunNVZBceJAFj2NZCQ1qoaqd6XFOwPw7ZCS1N6k4wrHrls4j8ZCyOE6HBFjtELZADHBsiLVsJXCsZCLwOfT17wmGBocVY8k4MKPO9MLnZBsVlZCGt99GR72OikPWL8mlwJl7tOhhMJUZCmZAIEJuywZDZD";
 
+  return fb_graph.retrieve_and_set_graph_profiledata(user_id, token)
+    .then((data)=>{
+        console.log("user data has been saved")
+        response.send( "user data has been saved");
+    }).catch((err)=>{
+        console.log("store_token error" + JSON.stringify(err));
+        response.sendStatus(500);
+    });
 
 });
 
 
-app.get('/eventchatmain_monitor', (req, res)=> {
+app.get('/eventchatmain_monitor', (req, response)=> {
 
   const event_id = "-Kid148AQD3DC5ftdsuX";
   const sender_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
-  message.eventchat_added(event_id, sender_id);
-
+  return message.eventchat_added(event_id, sender_id)
+    .then((data)=>{
+        console.log("  event chat message updated")
+        response.send( "event chat message updated");
+    }).catch((err)=>{
+        console.log("event chat message error" + JSON.stringify(err));
+        response.sendStatus(500);
+    });
 });
 
 
 
-app.get('/writtendebate2_opinion_monitor', (req, res)=> {
+app.get('/writtendebate2_opinion_monitor', (req, response)=> {
 
   const event_id = "-KjGgf5DFaROgdvM9Ebh";
   const sender_id = "KmrhWB4uRSR6FkqTpLPFFkIGZr92";
   const opinion_id = "-KjbCrDk1ufFY8GzJblH"
 
-  notification.writtendebate2_add_opinion(event_id, opinion_id, sender_id);
+  return notification.writtendebate2_add_opinion(event_id, opinion_id, sender_id)
+    .then((data)=>{
+        console.log("  writtendebate2_add_opinion then")
+        response.send( "writtendebate2_add_opinion then");
+    }).catch((err)=>{
+        console.log("writtendebate2_add_opinion error" + JSON.stringify(err));
+        response.sendStatus(500);
+    });
 
 });
 
@@ -430,6 +543,28 @@ app.get('/audiotranscriptserver_sentence_comment_monitor', (req, res)=> {
 });
 
 
+app.get('/TestMainspeaker', (req, res)=> {
+
+    const event_id = '-KtfMBS6u-CMeR-LvBN1';
+    const data = {
+        role_name: 'NA_MG',
+        role_num: 3,
+        speech_start_time: 1505213204360,
+        team_name: 'gov',
+        team_side: 'LEFT',
+        user_id: 'KmrhWB4uRSR6FkqTpLPFFkIGZr92' 
+    }
+    
+    return speech_status.mainspeaker_update(event_id, data)
+        .then(()=>{
+            res.send('mainspeaker_update done');
+        })
+        .catch((err)=>{
+            res.sendStatus(500)
+        });
+  
+  });
+  
 
 
 

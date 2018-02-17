@@ -1,8 +1,6 @@
 
 
 import * as firebase_admin from 'firebase-admin';
-// import * as Promise from 'bluebird';
-
 
 
 export class OgpGenerate{
@@ -13,6 +11,9 @@ export class OgpGenerate{
 
 
     private get_fixed_ogp_meta(full_url){
+
+        console.log("get_fixed_ogp_meta");
+
         const ogp_url = '<meta property="og:url" content="' + full_url + '" />';
         const ogp_title = '<meta property="og:title" content="online debate platform" />';
         const ogp_description = '<meta property="og:description" content=" online debate platform" />'
@@ -21,12 +22,14 @@ export class OgpGenerate{
         const ogp_facebook_appid = '<meta property="fb:app_id" content="922863714492725" />'
 
         const ogp_meta_text =  ogp_url + ogp_title + ogp_description + ogp_image + ogp_facebook_appid;
-        console.log(ogp_meta_text);
+
         return ogp_meta_text;
     }
 
 
     private get_ogp_meta( full_url , title, description ){
+
+        console.log("get_ogp_meta");
 
         const ogp_url = '<meta property="og:url" content="' + full_url + '" />';
         const ogp_title = '<meta property="og:title" content="' + title  + '" />';
@@ -36,12 +39,14 @@ export class OgpGenerate{
         const ogp_facebook_appid = '<meta property="fb:app_id" content="922863714492725" />'
 
         const ogp_meta_text =  ogp_url + ogp_title + ogp_description + ogp_image + ogp_facebook_appid;
-        console.log(ogp_meta_text);
+
         return ogp_meta_text;
 
     }
 
     private get_eventlist_ogp_meta( full_url ){
+
+        console.log("get_eventlist_ogp_meta");
 
         const ogp_url = '<meta property="og:url" content="' + full_url + '" />';
         const ogp_title = '<meta property="og:title" content="online debate platform" />';
@@ -51,13 +56,15 @@ export class OgpGenerate{
         const ogp_facebook_appid = '<meta property="fb:app_id" content="922863714492725" />'
 
         const ogp_meta_text =  ogp_url + ogp_title + ogp_description + ogp_image + ogp_facebook_appid;
-        console.log(ogp_meta_text);
+
         return ogp_meta_text;
 
     }
 
 
     private get_articlelist_ogp_meta( full_url ){
+
+        console.log("get_articlelist_ogp_meta");
 
         const ogp_url = '<meta property="og:url" content="' + full_url + '" />';
         const ogp_title = '<meta property="og:title" content="online debate platform" />';
@@ -67,7 +74,7 @@ export class OgpGenerate{
         const ogp_facebook_appid = '<meta property="fb:app_id" content="922863714492725" />'
 
         const ogp_meta_text =  ogp_url + ogp_title + ogp_description + ogp_image + ogp_facebook_appid;
-        console.log(ogp_meta_text);
+
         return ogp_meta_text;
 
     }
@@ -77,24 +84,32 @@ export class OgpGenerate{
 
 
 
-    get_ogp(full_url, url_path): Promise<any>{
+    async get_ogp(full_url, url_path){
 
         return new Promise((resolve, reject)=>{
-
+            
             const url_arr = url_path.split("/");
-            console.log(url_arr);
+            console.log("url_path", url_path)
+            console.log("url_arr", url_arr);
+            console.log("full_url", full_url);
 
             if( url_arr[1]==="event" && url_arr[2]==="eventcontext" && url_arr[3]){
                 const event_id = url_arr[3];
                 this.retrieve_event_ogp( full_url, event_id).then((html_text)=>{
 
-                    resolve(html_text);
+                    return resolve(html_text);
                 });
             }else if (url_arr[1]==="livevideo-debate-audio-serverrecognition" && url_arr[2]){
                 console.log("categirized as livevideo-debate-audio-serverrecognition ")
                 const event_id = url_arr[2];
                 this.retrieve_audioserverrecognition_ogp( full_url, event_id).then((html_text)=>{
-                    resolve(html_text);
+                    return resolve(html_text);
+                });
+            }else if (url_arr[1]==="livevideo-debate-audio-serverrecog-2" && url_arr[2]){
+                console.log("categirized as livevideo-debate-audio-serverrecog-2")
+                const event_id = url_arr[2];
+                this.retrieve_audioserverrecognition_ogp_2( full_url, event_id).then((html_text)=>{
+                    return resolve(html_text);
                 });
             }else if (url_arr[1]==="writtendebate-article2" && url_arr[2]){
                 console.log("writtendebate-article2 ")
@@ -105,21 +120,32 @@ export class OgpGenerate{
             }else if(url_arr[1]==="livevideo-debate-audio" && url_arr[2]){
                 const event_id = url_arr[2];
                 this.retrieve_audio_ogp( full_url, event_id).then((html_text)=>{
-                    resolve(html_text);
+                    return resolve(html_text);
                 });
             }else if (url_arr[1]==="event" && url_arr[2]==="eventlist"){
 
                 const html_text =  this.get_eventlist_ogp_meta(full_url)
-                resolve(html_text);
+                return resolve(html_text);
 
             }else if (url_arr[1]==="article" && url_arr[2]==="articlelist"){
 
                 const html_text =  this.get_articlelist_ogp_meta(full_url)
-                resolve(html_text);
+                return resolve(html_text);
+
+            }else if (url_arr[1]==="group" && url_arr[2] ){
+
+                const group_data = url_arr[2];
+
+                const group_arr = group_data.split("?");
+                const group_id = group_arr[0]
+
+                this.retrieve_group( full_url, group_id).then((html_text)=>{
+                    return resolve(html_text);
+                });
 
             } else {
                 const html_text = this.get_fixed_ogp_meta(full_url);
-                resolve(html_text);
+                return resolve(html_text);
             }
 
 
@@ -133,12 +159,14 @@ export class OgpGenerate{
 
     private retrieve_event_ogp( full_url, event_id){
 
+        console.log("retrieve_event_ogp");
+
         return new Promise((resolve, reject)=>{
 
             const event_ref = "/event_related/event/" + event_id;
             firebase_admin.database().ref(event_ref).once("value")
             .then( (snapshot)=>{
-                const event_context = snapshot.val();
+                const event_context = snapshot.val() || {};
                 console.log(event_context);
                 let title_text = " online debate"
 
@@ -160,6 +188,9 @@ export class OgpGenerate{
                     const detail_text =  event_title + " &nbsp; --  &nbsp; " + event_context.motion;
                     const html_text = this.get_ogp_meta(full_url, title_text, detail_text);
                     return resolve(html_text);
+                }else{
+                    const html_text = this.get_fixed_ogp_meta(full_url);;
+                    return resolve(html_text);
                 }
 
 
@@ -167,7 +198,8 @@ export class OgpGenerate{
             }).catch((err)=>{
                 console.log("error to retrieve event info from firebase", err);
 
-                return resolve("");
+                const html_text = this.get_fixed_ogp_meta(full_url);;
+                return resolve(html_text);
             })
         })
 
@@ -175,13 +207,14 @@ export class OgpGenerate{
 
     private retrieve_audioserverrecognition_ogp( full_url, event_id){
 
+        console.log("retrieve_audioserverrecognition_ogp");
 
         return new Promise((resolve, reject)=>{
 
             const event_ref = "/event_related/audio_transcriptserver/" + event_id;
             firebase_admin.database().ref(event_ref).once("value")
             .then( (snapshot)=>{
-                const aurioarticle_context = snapshot.val();
+                const aurioarticle_context = snapshot.val() || {};
                 console.log("event_context", aurioarticle_context);
                 const title_text = "speech and transcription of online debate"
                 const detail_text =  aurioarticle_context.motion;
@@ -200,15 +233,47 @@ export class OgpGenerate{
 
     }
 
+
+    private retrieve_audioserverrecognition_ogp_2( full_url, event_id){
+
+        console.log("retrieve_audioserverrecognition_ogp_2");
+
+        return new Promise((resolve, reject)=>{
+
+            const event_ref = "/event_related/audio_transcriptserver_2/" + event_id;
+            firebase_admin.database().ref(event_ref).once("value")
+            .then( (snapshot)=>{
+                const aurioarticle_context = snapshot.val() || {};
+                console.log("event_context", aurioarticle_context);
+                const title_text = "speech and transcription of online debate"
+                const detail_text =  aurioarticle_context.motion;
+                const html_text = this.get_ogp_meta(full_url, title_text, detail_text);
+                return resolve(html_text);
+
+            }).catch((err)=>{
+                console.log("error to retrieve event info from firebase", err);
+                // const html_text = get_fixed_ogphtml(full_url);
+                const html_text = this.get_fixed_ogp_meta(full_url);;
+                return resolve(html_text);
+
+            })
+
+        })
+
+    }
+
+
+
     private retrieve_writtendebatearticle2_ogp( full_url, event_id){
 
+        console.log("retrieve_writtendebatearticle2_ogp");
 
         return new Promise((resolve, reject)=>{
 
             const event_ref = "/event_related/event/" + event_id;
             firebase_admin.database().ref(event_ref).once("value")
             .then( (snapshot)=>{
-                const event_context = snapshot.val();
+                const event_context = snapshot.val() || {};
                 console.log("event_context", event_context);
                 const title_text = "online written debate "
                 const detail_text =  event_context.motion;
@@ -228,6 +293,7 @@ export class OgpGenerate{
 
     private retrieve_audio_ogp( full_url, event_id){
 
+        console.log("retrieve_audio_ogp");
 
         return new Promise((resolve, reject)=>{
 
@@ -235,7 +301,7 @@ export class OgpGenerate{
             firebase_admin.database().ref(event_ref).once("value")
             .then( (snapshot)=>{
                 const auriotranscript_context = snapshot.val();
-                console.log("event_context", auriotranscript_context);
+                console.log("event_context", auriotranscript_context) || {};
                 const title_text = "speech and transcription of online debate";
                 const detail_text =  auriotranscript_context.motion;
                 const html_text = this.get_ogp_meta(full_url, title_text, detail_text);
@@ -249,13 +315,35 @@ export class OgpGenerate{
             })
 
         })
+    }
 
+    private retrieve_group(full_url, group_id){
+
+        console.log("retrieve_group", group_id);
+
+        return new Promise((resolve, reject)=>{
+
+            const event_ref = "/group/group_basic/" + group_id;
+            firebase_admin.database().ref(event_ref).once("value")
+            .then( (snapshot)=>{
+                const group_context = snapshot.val();
+                console.log("group_context", group_context) || {};
+                const title_text = "online debate group invitation";
+                const detail_text =  group_context.group_name;
+                const html_text = this.get_ogp_meta(full_url, title_text, detail_text);
+                return resolve(html_text);
+
+            }).catch((err)=>{
+                console.log("error to retrieve group info from firebase ", err);
+                const html_text = this.get_fixed_ogp_meta(full_url);;
+                return resolve(html_text);
+            })
+
+        })
 
     }
 
 
-
-
 }
 
-module.exports = OgpGenerate;
+// module.exports = OgpGenerate;
